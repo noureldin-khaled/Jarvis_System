@@ -3,8 +3,8 @@ module.exports = function(app) {
   var DeviceController = require('../controllers/DeviceController');
   var auth = require('../middlewares/AuthMiddleware');
 
-  app.post('/device/store', auth, DeviceController.storeDevice);
-  app.delete('/device/delete/:id', auth, DeviceController.deleteDevice);
-  app.post('/device/update/:id', auth, DeviceController.updateDevice);
+  app.post('/api/device/store', auth, DeviceController.store);
+  app.delete('/api/device/delete/:id', auth, DeviceController.delete);
+  app.post('/api/device/update/:id', auth, DeviceController.update);
 
 };
