@@ -1,6 +1,6 @@
 var Room = require('../models/Room').Room;
 
-module.exports.addRoom = function(req, res, next) {
+module.exports.store = function(req, res, next) {
 
     req.checkBody('name', 'required').notEmpty();
     req.sanitizeBody('name').escape();
@@ -36,12 +36,12 @@ module.exports.addRoom = function(req, res, next) {
     });
 };
 
-module.exports.editRoom = function(req, res, next) {
+module.exports.update = function(req, res, next) {
 
     req.checkBody('name', 'required').notEmpty();
     req.sanitizeBody('name').escape();
     req.sanitizeBody('name').trim();
-    req.checkParams('id', 'Invalid urlparam').isInt();
+    req.checkParams('id', 'invalid').isInt();
 
     var errors = req.validationErrors();
 
@@ -54,21 +54,17 @@ module.exports.editRoom = function(req, res, next) {
         return;
     }
 
-    Room.findOne({ where: { id: req.params.id } }).then(function(room) {
-        room.name = req.body.name;
-        room.save().then(function(rm) {
-            res.status(200).json({
-                status: 'succeeded',
-                room: rm
-            });
-        }).catch(function(err) {
-            res.status(500).json({
-                status: 'failed',
-                message: 'Internal server error',
-                error: err
-            });
-        });
+    Room.update({
+        name: req.body.name
+    }, {
+        where: {
+            id: req.params.id
+        }
+    }).then(function() {
 
+        res.status(200).json({
+            status: 'succeeded'
+        });
     }).catch(function(err) {
         res.status(500).json({
             status: 'failed',
@@ -76,10 +72,11 @@ module.exports.editRoom = function(req, res, next) {
             error: err
         });
     });
+
 };
 
-module.exports.deleteRoom = function(req, res, next) {
-    req.checkParams('id', 'Invalid urlparam').isInt();
+module.exports.delete = function(req, res, next) {
+    req.checkParams('id', 'invalid').isInt();
 
     var errors = req.validationErrors();
 
@@ -92,18 +89,10 @@ module.exports.deleteRoom = function(req, res, next) {
         return;
     }
 
-    Room.findOne({ where: { id: req.params.id } }).then(function(room) {
+    Room.destroy({ where: { id: req.params.id } }).then(function() {
 
-        room.destroy().then(function() {
-            res.status(200).json({
-                status: 'succeeded'
-            });
-        }).catch(function(err) {
-            res.status(500).json({
-                status: 'failed',
-                message: 'Internal server error',
-                error: err
-            });
+        res.status(200).json({
+            status: 'succeeded'
         });
 
     }).catch(function(err) {
@@ -116,7 +105,7 @@ module.exports.deleteRoom = function(req, res, next) {
 
 };
 
-module.exports.getRooms = function(req, res, next) {
+module.exports.index = function(req, res, next) {
     Room.findAll().then(function(rooms) {
         res.status(200).json({
             status: 'succeeded',
