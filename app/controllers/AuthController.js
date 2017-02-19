@@ -99,16 +99,25 @@ module.exports.register = function(req, res, next) {
       password: req.body.password
    });
 
-   user.save().then(function(usr) {
-      res.status(200).json({
-         status: 'succeeded',
-         user: usr
-      });
-   }).catch(function(err) {
-      res.status(500).json({
-         status: 'failed',
-         message: 'Internal server error',
-         error: err
+   User.findAll().then(function(entries) {
+      if (entries.length === 0) {
+            user.type = 'Admin';
+      }
+      else {
+         user.type = 'Normal';
+      }
+
+      user.save().then(function(usr) {
+         res.status(200).json({
+            status: 'succeeded',
+            user: usr
+         });
+      }).catch(function(err) {
+         res.status(500).json({
+            status: 'failed',
+            message: 'Internal server error',
+            error: err
+         });
       });
    });
 };

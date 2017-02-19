@@ -15,6 +15,10 @@ module.exports.defineUser = function(sequelize) {
          },
          allowNull: false
       },
+      type: {
+         type: Sequelize.ENUM('Admin', 'Normal'),
+         allowNull: false
+      },
       token: {
          type: Sequelize.STRING,
          allowNull: true,
@@ -22,7 +26,6 @@ module.exports.defineUser = function(sequelize) {
       }
    },
    {
-      paranoid: true,
       underscored: true,
       underscoredAll: true,
       instanceMethods:
@@ -33,6 +36,9 @@ module.exports.defineUser = function(sequelize) {
          nullifyToken: function(callback) {
             this.token = null;
             callback();
+         },
+         isAdmin: function() {
+            return this.type === 'Admin';
          }
       }
    }
