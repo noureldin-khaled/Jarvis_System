@@ -10,7 +10,6 @@ module.exports.defineRoom = function(sequelize) {
       }
    },
    {
-      paranoid: true,
       underscored: true,
       underscoredAll: true
    }

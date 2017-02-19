@@ -24,7 +24,6 @@ module.exports.defineDevice = function(sequelize) {
       }
    },
    {
-      paranoid: true,
       underscored: true,
       underscoredAll: true
    }
