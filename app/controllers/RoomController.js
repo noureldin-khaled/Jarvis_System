@@ -70,7 +70,7 @@ module.exports.update = function(req, res, next) {
       else {
          res.status(404).json({
             status: 'failed',
-            message: 'The route was not found.'
+            message: 'The requested route was not found.'
          });
       }
    }).catch(function(err) {
@@ -106,7 +106,7 @@ module.exports.delete = function(req, res, next) {
       else {
          res.status(404).json({
             status: 'failed',
-            message: 'The route was not found.'
+            message: 'The requested route was not found.'
          });
       }
    }).catch(function(err) {

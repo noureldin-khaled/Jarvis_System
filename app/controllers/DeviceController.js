@@ -3,203 +3,142 @@ var Device = require('../models/Device').Device;
 
 module.exports.store = function(req, res, next) {
 
-  req.checkBody('name', 'required').notEmpty();
-  req.checkBody('type', 'required').notEmpty();
-  req.checkBody('type', 'invalid').isIn(['Lock', 'Light Bulb'])
-  req.checkBody('status', 'required').notEmpty();
-  req.checkBody('status', 'invalid').isBoolean()
-  req.checkBody('mac_address', 'required').notEmpty();
-  req.checkBody('mac_address').isMACAddress();
+   req.checkBody('name', 'required').notEmpty();
+   req.checkBody('type', 'required').notEmpty();
+   req.checkBody('type', 'invalid').isIn(['Lock', 'Light Bulb']);
+   req.checkBody('mac_address', 'required').notEmpty();
+   req.checkBody('mac_address').isMACAddress();
 
-  var errors = req.validationErrors();
+   var errors = req.validationErrors();
 
-  if (errors) {
-     res.status(400).json({
-        status: 'failed',
-        errors: errors
-     });
+   if (errors) {
+      res.status(400).json({
+         status: 'failed',
+         errors: errors
+      });
 
-     return;
-  }
+      return;
+   }
 
-  var device = Device.build({
-     name: req.body.name,
-     type: req.body.type,
-     status: req.body.status,
-     mac_address: req.body.mac_address
-  });
+   var device = Device.build({
+      name: req.body.name,
+      type: req.body.type,
+      status: false,
+      mac_address: req.body.mac_address
+   });
 
-  device.save().then(function(newDevice) {
-     req.user.addDevice(newDevice)
-     res.status(200).json({
-        status: 'succeeded',
-        device: newDevice
-     });
-  }).catch(function(err) {
-     res.status(500).json({
-        status: 'failed',
-        message: 'Internal server error',
-        error: err
-     });
-  });
+   device.save().then(function(newDevice) {
+      req.user.addDevice(newDevice);
+      res.status(200).json({
+         status: 'succeeded',
+         device: newDevice
+      });
+   }).catch(function(err) {
+      res.status(500).json({
+         status: 'failed',
+         message: 'Internal server error',
+         error: err
+      });
+   });
 };
 
 module.exports.delete = function(req, res, next) {
 
-  req.checkParams('id', 'invalid').isInt()
-  var errors = req.validationErrors();
+   req.checkParams('id', 'invalid').isInt();
+   var errors = req.validationErrors();
 
-  if (errors) {
-     res.status(400).json({
-        status: 'failed',
-        errors: errors
-     });
-
-     return;
-  }
-
-  req.user.getDevices().then(function(devices){
-
-    var found = false
-    for (var i = 0; i < devices.length; i++){
-      if(devices[i].id == req.params.id){
-        found = true
-      }
-    }
-    if(found){
-      Device.destroy({where : {id: req.params.id, deleted_at: null}}).then(function(device){
-        res.status(200).json({
-          status: "succeeded",
-          message: "Device deleted successfully."
-        });
-      }).catch(function(err){
-        res.status(400).json({
-          status: "failed",
-          message: "Device does not exist"
-        });
-      });
-    }
-    else{
+   if (errors) {
       res.status(400).json({
-        status: "failed",
-        message: "Device does not exist or user not authorized to delete device"
+         status: 'failed',
+         errors: errors
       });
-    }
-  }).catch(function(err){
-    res.status(500).json({
-      status: "failed",
-      message: "Internal server error"
-    });
-  });
+
+      return;
+   }
+
+   Device.destroy({where : {id: req.params.idl}}).then(function(affected){
+      if(affected === 1){
+         res.status(200).json({
+            status: "succeeded",
+            message: "Device deleted successfully."
+         });
+      }
+      else{
+         res.status(404).json({
+            status: "succeeded",
+            message: "The requested route was not found."
+         });
+      }
+
+   }).catch(function(err){
+      res.status(500).json({
+         status: "failed",
+         message: "Internal server error."
+      });
+   });
 
 };
 
 module.exports.update = function(req, res, next) {
-  req.checkParams('id', 'invalid').isInt()
-  var errors = req.validationErrors();
+   req.checkParams('id', 'invalid').isInt();
+   var obj = {};
 
-  if (errors) {
-     res.status(400).json({
-        status: 'failed',
-        errors: errors
-     });
+   if(req.body.name){
+      req.sanitizeBody('name').escape();
+      req.sanitizeBody('name').trim();
+      obj.name = req.body.name;
+   }
+   if(req.body.type){
+      req.checkBody('type', 'invalid').isIn(['Lock', 'Light Bulb']);
+      req.sanitizeBody('type').escape();
+      req.sanitizeBody('type').trim();
+      obj.type = req.body.type;
+   }
+   if(req.body.status){
+      req.checkBody('status', 'invalid').isBoolean();
+      req.sanitizeBody('status').escape();
+      req.sanitizeBody('status').trim();
+      obj.status = req.body.status;
+   }
+   if(req.body.mac_address){
+      req.checkBody('mac_address').isMACAddress();
+      req.sanitizeBody('mac_address').escape();
+      req.sanitizeBody('mac_address').trim();
+      obj.mac_address = req.body.mac_address;
+   }
+   var errors = req.validationErrors();
 
-     return;
-  }
-
-  req.user.getDevices().then(function(devices){
-
-    var found = false
-    for (var i = 0; i < devices.length; i++){
-      if(devices[i].id == req.params.id){
-        found = true
-      }
-    }
-
-    if(found){
-
-      Device.findOne({where : {id: req.params.id , deleted_at : null}}).then(function(device){
-        if(device){
-          if(req.body.name){
-            device.name = req.body.name
-          }
-          if(req.body.type){
-            req.checkBody('type', 'invalid').isIn(['Lock', 'Light Bulb'])
-            var errors = req.validationErrors();
-
-            if (errors) {
-               res.status(400).json({
-                  status: 'failed',
-                  errors: errors
-               });
-
-               return;
-            }
-            device.type = req.body.type
-          }
-          if(req.body.status){
-            req.checkBody('status', 'invalid').isBoolean()
-
-            var errors = req.validationErrors();
-
-            if (errors) {
-               res.status(400).json({
-                  status: 'failed',
-                  errors: errors
-               });
-
-               return;
-            }
-            device.status = req.body.status
-          }
-          if(req.body.mac_address){
-            req.checkBody('mac_address').isMACAddress();
-
-            var errors = req.validationErrors();
-
-            if (errors) {
-               res.status(400).json({
-                  status: 'failed',
-                  errors: errors
-               });
-
-               return;
-            }
-            device.mac_address = req.body.mac_address
-          }
-
-          device.save().then(function(savedDevice) {
-             res.status(200).json({
-                status: 'succeeded',
-                message: 'Device updated',
-                device: savedDevice
-             });
-          });
-
-        }
-
-      }).catch(function(err) {
-         res.status(500).json({
-            status: 'failed',
-            message: 'Internal Server Error'
-         });
-      });
-
-    }
-    else{
+   if (errors) {
       res.status(400).json({
          status: 'failed',
-         message: "Device does not exist or user not authorized to delete device"
+         errors: errors
       });
-    }
 
-  }).catch(function(err) {
+      return;
+   }
 
-    res.status(500).json({
-       status: 'failed',
-       message: 'Internal Server Error'
-    });
+   Device.update(obj, {where : {id: req.params.id}}).then(function(affected){
 
-  });
+      if(affected[0] === 1){
+         res.status(200).json({
+            status: "succeeded",
+            message: "Device updated successfully."
+         });
+      }
+      else{
+         res.status(404).json({
+            status: "succeeded",
+            message: "The requested route was not found."
+         });
+      }
+
+   }).catch(function(err) {
+
+      res.status(500).json({
+         status: 'failed',
+         message: 'Internal Server Error'
+      });
+
+   });
 
 };

@@ -2,9 +2,10 @@ module.exports = function(app) {
 
   var DeviceController = require('../controllers/DeviceController');
   var auth = require('../middlewares/AuthMiddleware');
+  var admin = require('../middlewares/AdminMiddleware');
 
-  app.post('/api/device/store', auth, DeviceController.store);
-  app.delete('/api/device/delete/:id', auth, DeviceController.delete);
-  app.post('/api/device/update/:id', auth, DeviceController.update);
+  app.post('/api/device/store', auth, admin, DeviceController.store);
+  app.delete('/api/device/:id', auth, admin, DeviceController.delete);
+  app.put('/api/device/:id', auth, admin, DeviceController.update);
 
 };
