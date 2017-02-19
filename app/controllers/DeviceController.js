@@ -7,7 +7,9 @@ module.exports.store = function(req, res, next) {
    req.checkBody('type', 'required').notEmpty();
    req.checkBody('type', 'invalid').isIn(['Lock', 'Light Bulb']);
    req.checkBody('mac_address', 'required').notEmpty();
-   req.checkBody('mac_address').isMACAddress();
+   req.checkBody('mac_address', 'invalid').isMACAddress();
+   req.checkBody('room_id', 'required').notEmpty();
+   req.checkBody('room_id', 'invalid').isInt();
 
    var errors = req.validationErrors();
 
@@ -24,7 +26,8 @@ module.exports.store = function(req, res, next) {
       name: req.body.name,
       type: req.body.type,
       status: false,
-      mac_address: req.body.mac_address
+      mac_address: req.body.mac_address,
+      room_id: req.body.room_id
    });
 
    device.save().then(function(newDevice) {
@@ -56,7 +59,7 @@ module.exports.delete = function(req, res, next) {
       return;
    }
 
-   Device.destroy({where : {id: req.params.idl}}).then(function(affected){
+   Device.destroy({where : {id: req.params.id}}).then(function(affected){
       if(affected === 1){
          res.status(200).json({
             status: "succeeded",
@@ -65,7 +68,7 @@ module.exports.delete = function(req, res, next) {
       }
       else{
          res.status(404).json({
-            status: "succeeded",
+            status: "failed",
             message: "The requested route was not found."
          });
       }
@@ -101,10 +104,16 @@ module.exports.update = function(req, res, next) {
       obj.status = req.body.status;
    }
    if(req.body.mac_address){
-      req.checkBody('mac_address').isMACAddress();
+      req.checkBody('mac_address', 'invalid').isMACAddress();
       req.sanitizeBody('mac_address').escape();
       req.sanitizeBody('mac_address').trim();
       obj.mac_address = req.body.mac_address;
+   }
+   if(req.body.room_id){
+      req.checkBody('room_id', 'invalid').isInt();
+      req.sanitizeBody('room_id').escape();
+      req.sanitizeBody('room_id').trim();
+      obj.room_id = req.body.room_id;
    }
    var errors = req.validationErrors();
 
@@ -141,4 +150,23 @@ module.exports.update = function(req, res, next) {
 
    });
 
+};
+
+module.exports.index = function(req, res, next) {
+
+   req.user.getDevices().then(function(devices){
+
+      res.status(200).json({
+         status: 'succeeded',
+         devices: devices
+      });
+
+   }).catch(function(err) {
+      res.status(500).json({
+         status: 'failed',
+         message: 'Internal server error',
+         error: err
+      });
+
+   });
 };
