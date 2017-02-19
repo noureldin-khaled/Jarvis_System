@@ -26,7 +26,6 @@ module.exports.defineUser = function(sequelize) {
       }
    },
    {
-      paranoid: true,
       underscored: true,
       underscoredAll: true,
       instanceMethods:
