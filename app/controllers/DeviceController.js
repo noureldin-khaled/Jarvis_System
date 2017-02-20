@@ -1,4 +1,5 @@
 var Device = require('../models/Device').Device;
+var Script = require('../script');
 
 
 module.exports.store = function(req, res, next) {
@@ -168,5 +169,101 @@ module.exports.index = function(req, res, next) {
          error: err
       });
 
+   });
+};
+
+module.exports.handle = function(req, res, next) {
+   req.checkParams('id', 'invalid').isInt();
+   req.checkBody('status', 'required').notEmpty();
+   req.checkBody('status', 'invalid').isBoolean();
+   req.sanitizeBody('status').escape();
+   req.sanitizeBody('status').trim();
+
+   var errors = req.validationErrors();
+
+   if (errors) {
+      res.status(400).json({
+         status: 'failed',
+         errors: errors
+      });
+
+      return;
+   }
+
+   req.user.getDevices().then(function(devices) {
+      var idx = -1;
+
+      for (var i = 0; i < devices.length && idx == -1; i++) {
+         if (devices[i].id == req.params.id) {
+            idx = i;
+         }
+      }
+
+      if (idx == -1) {
+         res.status(401).json({
+            status:'failed',
+            message: 'The requested route was not found.'
+         });
+
+         return;
+      }
+
+      var device = devices[idx];
+      if (req.body.status === 'true') {
+         Script.turnOn(device, function(message, err) {
+            if (err) {
+               res.status(500).json({
+                  status: 'failed',
+                  message: 'Internal server error'
+               });
+
+               return;
+            }
+            else {
+               Device.update({ status: true }, { where : { id : device.id } }).then(function(newDevice) {
+                  res.status(200).json({
+                     status: 'succeeded',
+                     message: message
+                  });
+
+               });
+               return;
+            }
+         });
+      }
+      else {
+         Script.turnOff(device, function(message, err) {
+            if (err) {
+               res.status(500).json({
+                  status: 'failed',
+                  message: 'Internal server error'
+               });
+
+               return;
+            }
+            else {
+               Device.update({ status: false }, { where : { id : device.id } }).then(function(newDevice) {
+                  res.status(200).json({
+                     status: 'succeeded',
+                     message: message
+                  });
+
+                  return;
+               });
+            }
+         });
+      }
+
+   });
+};
+
+module.exports.scan = function(req, res, next) {
+   Script.scan(3000, function(results) {
+      res.status(200).json({
+         status: 'succeeded',
+         devices: results
+      });
+
+      return;
    });
 };
