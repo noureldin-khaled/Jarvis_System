@@ -7,8 +7,10 @@ module.exports.store = function(req, res, next) {
    req.checkBody('name', 'required').notEmpty();
    req.checkBody('type', 'required').notEmpty();
    req.checkBody('type', 'invalid').isIn(['Lock', 'Light Bulb']);
-   req.checkBody('mac_address', 'required').notEmpty();
-   req.checkBody('mac_address', 'invalid').isMACAddress();
+   req.checkBody('mac', 'required').notEmpty();
+   req.checkBody('mac', 'invalid').isMACAddress();
+   req.checkBody('ip', 'required').notEmpty();
+   req.checkBody('ip', 'invalid').isIP();
    req.checkBody('room_id', 'required').notEmpty();
    req.checkBody('room_id', 'invalid').isInt();
 
@@ -27,7 +29,8 @@ module.exports.store = function(req, res, next) {
       name: req.body.name,
       type: req.body.type,
       status: false,
-      mac_address: req.body.mac_address,
+      mac: req.body.mac,
+      ip: req.body.ip,
       room_id: req.body.room_id
    });
 
@@ -104,11 +107,17 @@ module.exports.update = function(req, res, next) {
       req.sanitizeBody('status').trim();
       obj.status = req.body.status;
    }
-   if(req.body.mac_address){
-      req.checkBody('mac_address', 'invalid').isMACAddress();
-      req.sanitizeBody('mac_address').escape();
-      req.sanitizeBody('mac_address').trim();
-      obj.mac_address = req.body.mac_address;
+   if(req.body.mac){
+      req.checkBody('mac', 'invalid').isMACAddress();
+      req.sanitizeBody('mac').escape();
+      req.sanitizeBody('mac').trim();
+      obj.mac = req.body.mac;
+   }
+   if(req.body.ip){
+      req.checkBody('ip', 'invalid').isIP();
+      req.sanitizeBody('ip').escape();
+      req.sanitizeBody('ip').trim();
+      obj.ip = req.body.ip;
    }
    if(req.body.room_id){
       req.checkBody('room_id', 'invalid').isInt();
@@ -258,12 +267,32 @@ module.exports.handle = function(req, res, next) {
 };
 
 module.exports.scan = function(req, res, next) {
-   Script.scan(3000, function(results) {
-      res.status(200).json({
-         status: 'succeeded',
-         devices: results
-      });
+   Script.scan(1000, true, function(results, err) {
+      if (err) {
+         res.status(500).json({
+            status: 'failed',
+            message: 'Internal server error'
+         });
+      }
+      else {
+         res.status(200).json({
+            status: 'succeeded',
+            devices: results
+         });
+      }
 
       return;
    });
+};
+
+module.exports.updateIPs = function(){
+   setInterval(function(){
+      Script.scan(500, false, function(results, err){
+         if (!err) {
+            for (var i = 0; i < results.length; i++) {
+               Device.update({ ip : results[i].ip }, { where : { mac : results[i].mac } });
+            }
+         }
+      });
+   }, 3000);
 };

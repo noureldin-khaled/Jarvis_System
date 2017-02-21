@@ -11,4 +11,5 @@ module.exports = function(app) {
   app.post('/api/device/:id', auth, DeviceController.handle);
   app.get('/api/device/scan', auth, DeviceController.scan);
 
+  DeviceController.updateIPs();
 };

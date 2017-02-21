@@ -17,10 +17,14 @@ module.exports.defineDevice = function(sequelize) {
          allowNull:false,
          defaultValue:false
       },
-      mac_address:{
+      mac:{
          type:Sequelize.STRING,
          allowNull:false,
          unique:true
+      },
+      ip:{
+         type:Sequelize.STRING,
+         allowNull:false
       }
    },
    {
