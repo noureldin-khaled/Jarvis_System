@@ -8,5 +8,8 @@ module.exports = function(app) {
   app.delete('/api/device/:id', auth, admin, DeviceController.delete);
   app.put('/api/device/:id', auth, admin, DeviceController.update);
   app.get('/api/device', auth, DeviceController.index);
+  app.post('/api/device/:id', auth, DeviceController.handle);
+  app.get('/api/device/scan', auth, DeviceController.scan);
 
+  DeviceController.updateIPs();
 };
