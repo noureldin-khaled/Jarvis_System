@@ -22,7 +22,7 @@ db.init(function(err) {
       app.use(methodOverride());
       require('./app/routes/routes.js')(app);
 
-      var port = process.env.PORT || 8000;
+      var port = process.env.PORT || 80;
 
       app.listen(port, function() {
          console.log('Listening on port ' + port + '...');
