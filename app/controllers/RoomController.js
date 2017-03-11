@@ -28,11 +28,33 @@ module.exports.store = function(req, res, next) {
          room: rm
       });
    }).catch(function(err) {
-      res.status(500).json({
-         status: 'failed',
-         message: 'Internal server error',
-         error: err
-      });
+       if (err.message === 'Validation error') {
+          var errors = [];
+          for (var i = 0; i < err.errors.length; i++) {
+             var error = {
+                  param: err.errors[i].path,
+                  msg: err.errors[i].type
+             };
+
+             if (err.errors[i].value) {
+                error.value = err.errors[i].value;
+             }
+
+             errors.push(error);
+          }
+
+          res.status(400).json({
+             status: 'failed',
+             errors: errors
+          });
+       }
+       else {
+          res.status(500).json({
+             status: 'failed',
+             message: 'Internal server error',
+             error: err
+          });
+       }
    });
 };
 
