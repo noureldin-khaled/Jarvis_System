@@ -3,8 +3,7 @@ module.exports = function(app) {
 	var auth = require('../middlewares/AuthMiddleware');
 	var admin = require('../middlewares/AdminMiddleware');
 
-   app.put('/api/user/:id', auth, admin, UserController.updateAuth);
+   app.put('/api/user/updateAuth', auth, admin, UserController.updateAuth);
    app.put('/api/user', auth, UserController.update);
    app.post('/api/user/:user_id/:device_id', auth, admin, UserController.privilege);
-
 };
