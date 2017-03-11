@@ -52,7 +52,9 @@ module.exports.update = function(req, res, next) {
 };
 
 module.exports.updateAuth = function(req, res, next) {
-   req.checkParams('id', 'invalid').isInt();
+    req.checkBody('username', 'required').notEmpty();
+    req.sanitizeBody('username').escape();
+    req.sanitizeBody('username').trim();
 
    var obj = {};
    if (req.body.type) {
@@ -72,7 +74,7 @@ module.exports.updateAuth = function(req, res, next) {
       return;
    }
 
-   User.update(obj, { where : { id : req.params.id } }).then(function(affected) {
+   User.update(obj, { where : { username : req.body.username } }).then(function(affected) {
       if (affected[0] === 1) {
          res.status(200).json({
             status: 'succeeded',
