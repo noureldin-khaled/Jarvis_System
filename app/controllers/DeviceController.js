@@ -25,21 +25,39 @@ module.exports.store = function(req, res, next) {
         return;
     }
 
-    var device = Device.build({
-        name: req.body.name,
-        type: req.body.type,
-        status: false,
-        mac: req.body.mac,
-        ip: req.body.ip,
-        room_id: req.body.room_id
-    });
+    Device.findAll({ where: { name: req.body.name, room_id: req.body.room_id } }).then(function(results) {
+        if (results.length === 0) {
+            var device = Device.build({
+                name: req.body.name,
+                type: req.body.type,
+                status: false,
+                mac: req.body.mac,
+                ip: req.body.ip,
+                room_id: req.body.room_id
+            });
 
-    device.save().then(function(newDevice) {
-        req.user.addDevice(newDevice);
-        res.status(200).json({
-            status: 'succeeded',
-            device: newDevice
-        });
+            device.save().then(function(newDevice) {
+                req.user.addDevice(newDevice);
+                res.status(200).json({
+                    status: 'succeeded',
+                    device: newDevice
+                });
+            }).catch(function(err) {
+                res.status(500).json({
+                    status: 'failed',
+                    message: 'Internal server error',
+                    error: err
+                });
+            });
+        }
+        else {
+            var errors = [];
+            errors.push({ param: 'name', msg: 'unique violation'});
+            res.status(400).json({
+               status: 'failed',
+               errors: errors
+            });
+        }
     }).catch(function(err) {
         res.status(500).json({
             status: 'failed',
@@ -119,11 +137,14 @@ module.exports.update = function(req, res, next) {
         req.sanitizeBody('ip').trim();
         obj.ip = req.body.ip;
     }
+
+    var target_room_id;
     if(req.body.room_id){
         req.checkBody('room_id', 'invalid').isInt();
         req.sanitizeBody('room_id').escape();
         req.sanitizeBody('room_id').trim();
         obj.room_id = req.body.room_id;
+        target_room_id = req.body.room_id;
     }
     var errors = req.validationErrors();
 
@@ -136,30 +157,57 @@ module.exports.update = function(req, res, next) {
         return;
     }
 
-    Device.update(obj, {where : {id: req.params.id}}).then(function(affected){
-
-        if(affected[0] === 1){
-            res.status(200).json({
-                status: "succeeded",
-                message: "Device updated successfully."
-            });
-        }
-        else{
+    Device.findById(req.params.id).then(function(device) {
+        if (!device) {
             res.status(404).json({
-                status: "succeeded",
+                status: "failed",
                 message: "The requested route was not found."
             });
         }
+        else {
+            if (!target_room_id) {
+                target_room_id = device.room_id;
+            }
 
-    }).catch(function(err) {
-
-        res.status(500).json({
-            status: 'failed',
-            message: 'Internal Server Error'
-        });
-
+            Device.findAll({ where: { $and: [{ name: req.body.name, room_id: target_room_id }, { id: { $ne: req.params.id } }] } }).then(function(results) {
+                if (results.length === 0) {
+                    Device.update(obj, {where : {id: req.params.id}}).then(function(affected){
+                        if(affected[0] === 1){
+                            res.status(200).json({
+                                status: "succeeded",
+                                message: "Device updated successfully."
+                            });
+                        }
+                        else{
+                            res.status(404).json({
+                                status: "failed",
+                                message: "The requested route was not found."
+                            });
+                        }
+                    }).catch(function(err) {
+                        res.status(500).json({
+                            status: 'failed',
+                            message: 'Internal Server Error'
+                        });
+                    });
+                }
+                else {
+                    var errors = [];
+                    errors.push({ param: 'name', msg: 'unique violation'});
+                    res.status(400).json({
+                       status: 'failed',
+                       errors: errors
+                    });
+                }
+            }).catch(function(err) {
+                res.status(500).json({
+                    status: 'failed',
+                    message: 'Internal server error',
+                    error: err
+                });
+            });
+        }
     });
-
 };
 
 module.exports.index = function(req, res, next) {
