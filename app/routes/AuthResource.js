@@ -1,4 +1,5 @@
 
+
 module.exports = function(app) {
    var AuthController = require('../controllers/AuthController');
    var auth = require('../middlewares/AuthMiddleware');
