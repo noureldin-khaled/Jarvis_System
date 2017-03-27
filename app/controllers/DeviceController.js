@@ -1,6 +1,6 @@
 var Device = require('../models/Device').Device;
 var Script = require('../script');
-
+var Patterns = require('./PatternController');
 
 module.exports.store = function(req, res, next) {
 
@@ -304,7 +304,7 @@ module.exports.handle = function(req, res, next) {
                             status: 'succeeded',
                             message: message
                         });
-
+                        Patterns.proccessEvent(req.user,req.params.id,req.body.status);
                         return;
                     });
                 }
