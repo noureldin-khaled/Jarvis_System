@@ -9,7 +9,7 @@ module.exports.proccessEvent = function(user, status, device_id) {
     var d = new Date();
 
     var event = {
-        time: d,
+        time: d.getHours()+':'+d.getMinutes(),
         device: device_id,
         status: status
     };
@@ -18,8 +18,7 @@ module.exports.proccessEvent = function(user, status, device_id) {
     if (user.lastEvent === null || user.lastEvent === undefined) {
 
         user.lastEvent = event;
-        user.sequence = [];
-        user.sequence.push(event);
+        user.sequence = [event];
         user.save().then(function() {});
         return;
 
@@ -30,18 +29,20 @@ module.exports.proccessEvent = function(user, status, device_id) {
     old_event = JSON.parse(old_event);
  	
     var old_time = old_event.time;
-    old_time = new Date(old_time);
-    console.log(old_time);
+    var res = old_time.split(':');
+    var old_minutes = parseInt(res[1]);
+    var old_hours = parseInt(res[0]);
+
     var current_sequence = user.sequence;
     current_sequence = JSON.parse(current_sequence);
 
 
     var new_minutes = d.getMinutes();
-    var old_minutes = old_time.getMinutes();
+    var new_hours = d.getHours();
 
     user.lastEvent = event;
 
-    if ((new_minutes - old_minutes) <= 1) {
+    if ((new_minutes - old_minutes) <= 5 && new_hours == old_hours) {
 
         current_sequence.push(event);
         user.sequence = current_sequence;
