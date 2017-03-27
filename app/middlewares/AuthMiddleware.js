@@ -10,8 +10,17 @@ module.exports = function(req, res, next) {
       jwt.verify(token, secret);
 
       User.findOne({ where : { token: token } }).then(function(user) {
-         req.user = user;
-         next();
+          if (user) {
+              req.user = user;
+              next();
+          }
+          else {
+              res.status(401).json({
+                 status:'failed',
+                 message: 'Authentication error, please log in again.'
+              });
+          }
+
       }).catch(function(err) {
          res.status(500).json({
             status:'failed',
