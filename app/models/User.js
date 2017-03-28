@@ -23,6 +23,18 @@ module.exports.defineUser = function(sequelize) {
          type: Sequelize.STRING,
          allowNull: true,
          unique: true
+      },
+      lastEvent: {
+         type: Sequelize.JSON,
+         allowNull: true
+      },
+      sequence: {
+         type: Sequelize.JSON,
+         allowNull: true
+      },
+      graph: {
+         type: Sequelize.JSON,
+         allowNull: true
       }
    },
    {
