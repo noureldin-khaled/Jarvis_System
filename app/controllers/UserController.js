@@ -1,149 +1,235 @@
 var User = require('../models/User').User;
 var Device = require('../models/Device').Device;
 
-module.exports.update = function(req, res, next) {
-   req.checkBody('old_password', 'required').notEmpty();
+module.exports.index = function(req, res, next) {
+    User.findAll({ where: { id: { $ne: req.user.id } } }).then(function(users) {
+        users.sort(function(a, b) {
+            return a.isAdmin() ? -1 : 1;
+        });
 
-   var obj = {};
-   if (req.body.new_password) {
-      obj.password = req.body.new_password;
-   }
+        var results = [];
+        for (var i = 0; i < users.length; i++) {
+            var user = {
+                id: users[i].id,
+                username: users[i].username,
+                type: users[i].type
+            };
 
-   var errors = req.validationErrors();
+            results.push(user);
+        }
 
-   if (errors) {
-      res.status(400).json({
-         status: 'failed',
-         errors: errors
-      });
-
-      return;
-   }
-
-   if (!req.user.validPassword(req.body.old_password)) {
-      res.status(403).json({
-         status: 'failed',
-         message: 'The provided credentials are not correct'
-      });
-
-      return;
-   }
-
-   User.update(obj, { where : { id : req.user.id } }).then(function(affected) {
-      if (affected[0] === 1) {
-         res.status(200).json({
+        res.status(200).json({
             status: 'succeeded',
-            message: 'user successfully updated'
-         });
-      }
-      else {
-         res.status(404).json({
+            users: results
+        });
+    }).catch(function(err) {
+        res.status(500).json({
             status:'failed',
-            message: 'The requested route was not found.'
-         });
-      }
-   }).catch(function(err) {
-      res.status(500).json({
-         status:'failed',
-         message: 'Internal server error'
-      });
-   });
+            message: 'Internal server error'
+        });
+    });
+};
+
+module.exports.indexForDevice = function(req, res, next) {
+    req.checkParams('id', 'invalid').isInt();
+
+    var errors = req.validationErrors();
+
+    if (errors) {
+        res.status(400).json({
+            status: 'failed',
+            errors: errors
+        });
+
+        return;
+    }
+
+    User.findAll({ include: [ { model: Device } ] }).then(function(users) {
+        var results = [];
+
+        for (var i = 0; i < users.length; i++) {
+            var currentUser = users[i];
+            var found = false;
+            for (var j = 0; j < currentUser.devices.length && found === false; j++) {
+                var currentDevice = currentUser.devices[j];
+                console.log(currentDevice);
+                if (currentDevice.id == req.params.id) {
+                    found = true;
+                }
+            }
+
+            if (found === false) {
+                if (currentUser == req.user.id) {
+                    res.status(403).json({
+                        status: 'failed',
+                        users: 'Authentication error, please log in again.'
+                    });
+
+                    return;
+                }
+
+                results.push({
+                    id: currentUser.id,
+                    username: currentUser.username,
+                    type: currentUser.type
+                });
+            }
+        }
+
+        res.status(200).json({
+            status: 'succeeded',
+            users: results
+        });
+    }).catch(function(err) {
+        res.status(500).json({
+            status:'failed',
+            message: 'Internal server error'
+        });
+
+        console.log(err);
+    });
+};
+
+module.exports.update = function(req, res, next) {
+    req.checkBody('old_password', 'required').notEmpty();
+
+    var obj = {};
+    if (req.body.new_password) {
+        obj.password = req.body.new_password;
+    }
+
+    var errors = req.validationErrors();
+
+    if (errors) {
+        res.status(400).json({
+            status: 'failed',
+            errors: errors
+        });
+
+        return;
+    }
+
+    if (!req.user.validPassword(req.body.old_password)) {
+        res.status(403).json({
+            status: 'failed',
+            message: 'The provided credentials are not correct'
+        });
+
+        return;
+    }
+
+    User.update(obj, { where : { id : req.user.id } }).then(function(affected) {
+        if (affected[0] === 1) {
+            res.status(200).json({
+                status: 'succeeded',
+                message: 'user successfully updated'
+            });
+        }
+        else {
+            res.status(404).json({
+                status:'failed',
+                message: 'The requested route was not found.'
+            });
+        }
+    }).catch(function(err) {
+        res.status(500).json({
+            status:'failed',
+            message: 'Internal server error'
+        });
+    });
 
 };
 
 module.exports.updateAuth = function(req, res, next) {
-    req.checkBody('username', 'required').notEmpty();
-    req.sanitizeBody('username').escape();
-    req.sanitizeBody('username').trim();
+    req.checkParams('id', 'invalid').isInt();
 
-   var obj = {};
-   if (req.body.type) {
-      req.sanitizeBody('type').escape();
-      req.sanitizeBody('type').trim();
-      obj.type = req.body.type;
-   }
+    var obj = {};
+    if (req.body.type) {
+        req.sanitizeBody('type').escape();
+        req.sanitizeBody('type').trim();
+        obj.type = req.body.type;
+    }
 
-   var errors = req.validationErrors();
+    var errors = req.validationErrors();
 
-   if (errors) {
-      res.status(400).json({
-         status: 'failed',
-         errors: errors
-      });
+    if (errors) {
+        res.status(400).json({
+            status: 'failed',
+            errors: errors
+        });
 
-      return;
-   }
+        return;
+    }
 
-   User.update(obj, { where : { username : req.body.username } }).then(function(affected) {
-      if (affected[0] === 1) {
-         res.status(200).json({
-            status: 'succeeded',
-            message: 'user successfully updated'
-         });
-      }
-      else {
-         res.status(404).json({
+    User.update(obj, { where : { id : req.params.id } }).then(function(affected) {
+        if (affected[0] === 1) {
+            res.status(200).json({
+                status: 'succeeded',
+                message: 'user successfully updated'
+            });
+        }
+        else {
+            res.status(404).json({
+                status:'failed',
+                message: 'The requested route was not found.'
+            });
+        }
+    }).catch(function(err) {
+        res.status(500).json({
             status:'failed',
-            message: 'The requested route was not found.'
-         });
-      }
-   }).catch(function(err) {
-      res.status(500).json({
-         status:'failed',
-         message: 'Internal server error'
-      });
-   });
+            message: 'Internal server error'
+        });
+    });
 };
 
 module.exports.privilege = function(req, res, next) {
-   req.checkParams('user_id', 'invalid').isInt();
-   req.checkParams('device_id', 'invalid').isInt();
+    req.checkParams('user_id', 'invalid').isInt();
+    req.checkParams('device_id', 'invalid').isInt();
 
-   var errors = req.validationErrors();
+    var errors = req.validationErrors();
 
-   if (errors) {
-      res.status(400).json({
-         status: 'failed',
-         errors: errors
-      });
+    if (errors) {
+        res.status(400).json({
+            status: 'failed',
+            errors: errors
+        });
 
-      return;
-   }
+        return;
+    }
 
-   User.findById(req.params.user_id).then(function(user) {
-
-      if (user) {
-         Device.findById(req.params.device_id).then(function(device) {
-            if (device) {
-               user.addDevice(device);
-               res.status(200).json({
-                  status: 'succeeded'
-               });
-            }
-            else {
-               res.status(404).json({
-                  status: "failed",
-                  message: "The requested route was not found."
-               });
-            }
-         }).catch(function(err) {
-            res.status(500).json({
-               status:'failed',
-               message: 'Internal server error'
+    User.findById(req.params.user_id).then(function(user) {
+        if (user) {
+            Device.findById(req.params.device_id).then(function(device) {
+                if (device) {
+                    user.addDevice(device);
+                    res.status(200).json({
+                        status: 'succeeded'
+                    });
+                }
+                else {
+                    res.status(404).json({
+                        status: "failed",
+                        message: "The requested route was not found."
+                    });
+                }
+            }).catch(function(err) {
+                res.status(500).json({
+                    status:'failed',
+                    message: 'Internal server error'
+                });
             });
-         });
-      }
-      else {
-         res.status(404).json({
-            status: "failed",
-            message: "The requested route was not found."
-         });
-      }
+        }
+        else {
+            res.status(404).json({
+                status: "failed",
+                message: "The requested route was not found."
+            });
+        }
 
-   }).catch(function(err) {
-      res.status(500).json({
-         status:'failed',
-         message: 'Internal server error'
-      });
-   });
+    }).catch(function(err) {
+        res.status(500).json({
+            status:'failed',
+            message: 'Internal server error'
+        });
+    });
 };
