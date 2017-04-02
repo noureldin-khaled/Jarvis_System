@@ -18,7 +18,7 @@ module.exports.update = function(req, res, next) {
 
     user.save().then(function(){
         res.status(200).json({
-            status:'OK',
+            status:'succeeded',
             message:'Done'
         });
     });
@@ -90,8 +90,14 @@ module.exports.proccessEvent = function(user, status, device_id) {
 
     var d = new Date();
 
+    var mins  = d.getMinutes();
+
+    var str = ''+mins;
+    if(mins<10)
+        str = '0'+str;
+
     var event = {
-        time: d.getHours() + ':' + d.getMinutes(),
+        time: d.getHours() + ':' + str,
         device: device_id,
         status: status
     };
