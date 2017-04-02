@@ -35,6 +35,10 @@ module.exports.defineUser = function(sequelize) {
       graph: {
          type: Sequelize.JSON,
          allowNull: true
+      },
+      patterns: {
+         type: Sequelize.JSON,
+         allowNull:true
       }
    },
    {
