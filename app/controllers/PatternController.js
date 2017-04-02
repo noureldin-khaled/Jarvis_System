@@ -96,6 +96,12 @@ module.exports.proccessEvent = function(user, status, device_id) {
     if(mins<10)
         str = '0'+str;
 
+    var hours  = d.getHours();
+    var str1 = ''+hours;
+    if(hours<10)
+        str1 = '0'+str1;
+
+
     var event = {
         time: d.getHours() + ':' + str,
         device: device_id,
