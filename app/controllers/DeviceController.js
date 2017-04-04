@@ -304,7 +304,7 @@ module.exports.handle = function(req, res, next) {
                             status: 'succeeded',
                             message: message
                         });
-                        Patterns.proccessEvent(req.user,req.params.id,req.body.status);
+                        Patterns.proccessEvent(req.user,device.name,req.body.status);
                         return;
                     });
                 }
