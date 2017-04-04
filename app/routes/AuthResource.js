@@ -6,6 +6,7 @@ module.exports = function(app) {
 
    app.post('/api/login', AuthController.login);
    app.post('/api/register', AuthController.register);
+   app.post('/api/auth', AuthController.auth);
    app.get('/api/logout', auth, AuthController.logout);
 
 };

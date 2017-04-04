@@ -30,6 +30,7 @@ db.init(function(err) {
         });
 
         listenForBroadcast(port);
+        generateKeys();
     }
 });
 
@@ -55,4 +56,15 @@ var listenForBroadcast = function(port) {
     });
 
     server.bind(9000);
+};
+
+var generateKeys = function() {
+    var crypto = require('crypto');
+    var ecdh = crypto.createECDH('secp256k1');
+    ecdh.generateKeys();
+    var publicKey  = ecdh.getPublicKey(null, 'compressed');
+    var privateKey = ecdh.getPrivateKey(null, 'compressed');
+
+    process.env.PUBLIC_KEY = publicKey;
+    process.env.PRIVATE_KEY = privateKey;
 };
