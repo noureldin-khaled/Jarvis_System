@@ -1,5 +1,8 @@
 require('dotenv').load();
 
+var https = require('https');
+var http = require('http');
+var fs = require('fs');
 var express = require('express');
 var expressValidator = require('express-validator');
 var app = express();
@@ -7,6 +10,10 @@ var bodyParser = require('body-parser');
 var methodOverride = require('method-override');
 var db = require('./config/database/database');
 var dgram = require("dgram");
+var options = {
+    key: fs.readFileSync('key.pem'),
+    cert: fs.readFileSync('cert.pem')
+};
 
 db.init(function(err) {
     if (err) {
@@ -25,8 +32,12 @@ db.init(function(err) {
 
         var port = process.env.PORT || 80;
 
-        app.listen(port, function() {
-            console.log('Listening on port ' + port + '...');
+        http.createServer(app).listen(port, function() {
+            console.log('HTTP Listening on port ' + port + '...');
+        });
+
+        https.createServer(options, app).listen(port, function() {
+            console.log('HTTPS Listening on port ' + port + '...');
         });
 
         listenForBroadcast(port);
