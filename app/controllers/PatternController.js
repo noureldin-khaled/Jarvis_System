@@ -8,7 +8,7 @@ module.exports.update = function(req, res, next) {
     var user = req.user;
     var patterns = user.patterns;
     patterns = JSON.parse(patterns);
-  
+
     var sequence_id = req.params.sequenceid;
     var event_id = req.params.eventid;
     patterns[sequence_id][event_id].time = req.body.time;
@@ -22,13 +22,12 @@ module.exports.update = function(req, res, next) {
             message:'Done'
         });
     });
-    
+
 };
 
 
 
 module.exports.getPatterns = function(req, res, next) {
-
 
     var user = req.user;
     var graph = user.graph;
@@ -47,6 +46,7 @@ module.exports.getPatterns = function(req, res, next) {
         }
 
     }
+    console.log(patterns);
 
     user.patterns = patterns;
     user.save().then(function() {
@@ -58,10 +58,11 @@ module.exports.getPatterns = function(req, res, next) {
 
 };
 
-var getSequence = function(graph, event) {
+var getSequence = function(graph, e) {
 
-    var sequence = [event];
-    var eventParent = event;
+
+    var sequence = [e];
+    var eventParent = e;
     var i = 0;
     while (i < graph.length) {
         if (graph[i].event.time == eventParent.time && graph[i].event.device == eventParent.device && graph[i].event.status == eventParent.status) {

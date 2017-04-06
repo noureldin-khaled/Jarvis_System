@@ -284,6 +284,7 @@ module.exports.handle = function(req, res, next) {
                         });
 
                     });
+                    Patterns.proccessEvent(req.user,req.body.status,device.name);
                     return;
                 }
             });
@@ -304,7 +305,7 @@ module.exports.handle = function(req, res, next) {
                             status: 'succeeded',
                             message: message
                         });
-                        Patterns.proccessEvent(req.user,device.name,req.body.status);
+                        Patterns.proccessEvent(req.user,req.body.status,device.name);
                         return;
                     });
                 }
