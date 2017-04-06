@@ -34,6 +34,7 @@ module.exports.getPatterns = function(req, res, next) {
     var graph = user.graph;
     graph = JSON.parse(graph);
     var patterns = user.patterns;
+    patterns = JSON.parse(patterns);
     if (patterns === null) {
         patterns = [];
     }
