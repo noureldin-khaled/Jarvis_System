@@ -1,5 +1,5 @@
 var User = require('../models/User').User;
-var freq = 1;
+
 
 module.exports.update = function(req, res, next) {
 
@@ -31,6 +31,8 @@ module.exports.getPatterns = function(req, res, next) {
 
     var user = req.user;
     var graph = user.graph;
+    var freq = user.frequency;
+
     graph = JSON.parse(graph);
     var patterns = user.patterns;
     patterns = JSON.parse(patterns);
@@ -41,7 +43,7 @@ module.exports.getPatterns = function(req, res, next) {
     for (var i = 0; i < graph.length; i++) {
 
         if (graph[i].count >= freq) {
-            sequence = getSequence(graph, graph[i].event);
+            sequence = getSequence(graph, graph[i].event, freq);
             patterns.push(sequence);
         }
 
@@ -58,11 +60,12 @@ module.exports.getPatterns = function(req, res, next) {
 
 };
 
-var getSequence = function(graph, e) {
+var getSequence = function(graph, e, freq) {
 
 
     var sequence = [e];
     var eventParent = e;
+
     var i = 0;
     while (i < graph.length) {
         if (graph[i].event.time == eventParent.time && graph[i].event.device == eventParent.device && graph[i].event.status == eventParent.status) {
@@ -87,7 +90,7 @@ var getSequence = function(graph, e) {
 };
 
 
-module.exports.proccessEvent = function(user, status, device_id) {
+module.exports.proccessEvent = function(user, status, device, device_id) {
 
 
     var d = new Date();
@@ -105,8 +108,9 @@ module.exports.proccessEvent = function(user, status, device_id) {
 
 
     var event = {
-        time: d.getHours() + ':' + str,
-        device: device_id,
+        time: str1 + ':' + str,
+        device: device,
+        device_id: device_id,
         status: status
     };
 
@@ -175,7 +179,7 @@ function addToGraph(sequence, user) {
         var found = false;
         var index = 0;
         for (var j = 0; j < graph.length; j++) {
-            if (graph[j].event.time == event.time && graph[j].event.device == event.device && graph[j].event.status == event.status) {
+            if (graph[j].event.time == event.time && graph[j].event.device_id == event.device_id && graph[j].event.status == event.status) {
                 if (i === 0)
                     graph[j].count++;
                 found = true;
@@ -217,4 +221,30 @@ function addToGraph(sequence, user) {
 
     user.graph = graph;
     user.save().then(function() {});
+}
+
+module.exports.updateFrequency = function (){
+
+    setInterval(updateUsers,86400000);
+
+};
+
+function updateUsers(){
+
+        User.findAll().then(function(users){
+
+        for (var i = 0; i < users.length; i++) {
+            var timer = users[i].timer;
+            var freq = users[i].frequency;
+            if(timer === 0){
+                freq++;
+                users[i].frequency = freq;
+            } else {
+                timer = timer - 86400000;
+                users[i].timer = timer;
+            }
+            users[i].save();
+        }
+
+    });
 }
