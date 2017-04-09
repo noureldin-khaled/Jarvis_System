@@ -11,8 +11,8 @@ var methodOverride = require('method-override');
 var db = require('./config/database/database');
 var dgram = require("dgram");
 var options = {
-    key: fs.readFileSync('key.pem'),
-    cert: fs.readFileSync('cert.pem')
+    key: fs.readFileSync('./key.pem'),
+    cert: fs.readFileSync('./cert.pem')
 };
 
 db.init(function(err) {
@@ -32,12 +32,12 @@ db.init(function(err) {
 
         var port = process.env.PORT || 80;
 
-        http.createServer(app).listen(port, function() {
-            console.log('HTTP Listening on port ' + port + '...');
+        http.createServer(app).listen(8000, function() {
+            console.log('HTTP Listening on port ' + 8000 + '...');
         });
 
-        https.createServer(options, app).listen(port, function() {
-            console.log('HTTPS Listening on port ' + port + '...');
+        https.createServer(options, app).listen(8080, function() {
+            console.log('HTTPS Listening on port ' + 8080 + '...');
         });
 
         listenForBroadcast(port);
