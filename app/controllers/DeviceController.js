@@ -284,7 +284,7 @@ module.exports.handle = function(req, res, next) {
                         });
 
                     });
-                    Patterns.proccessEvent(req.user,req.body.status,device.name);
+                    Patterns.proccessEvent(req.user,req.body.status,device.name, device.id);
                     return;
                 }
             });

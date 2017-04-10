@@ -1,6 +1,13 @@
 var User = require('../models/User').User;
 
 
+module.exports.put= function(req, res,next){
+
+    proccessEvent(req.user,req.body.status,req.body.device,req.body.device_id, req.body.time);
+    res.status(200).json({"message":"OK"});
+};
+
+
 module.exports.update = function(req, res, next) {
 
     req.checkBody('time', 'required').notEmpty();
@@ -31,13 +38,20 @@ module.exports.getPatterns = function(req, res, next) {
 
     var user = req.user;
     var graph = user.graph;
-    var freq = user.frequency;
+    var freq = 1;//user.frequency;
 
     graph = JSON.parse(graph);
     var patterns = user.patterns;
     patterns = JSON.parse(patterns);
     if (patterns === null) {
         patterns = [];
+    }
+    if(graph===null){
+            res.status(200).json({
+            status: 'OK',
+            patterns: patterns
+        });
+        return;
     }
     var sequence = [];
     for (var i = 0; i < graph.length; i++) {
@@ -48,7 +62,6 @@ module.exports.getPatterns = function(req, res, next) {
         }
 
     }
-    console.log(patterns);
 
     user.patterns = patterns;
     user.save().then(function() {
@@ -62,13 +75,13 @@ module.exports.getPatterns = function(req, res, next) {
 
 var getSequence = function(graph, e, freq) {
 
-
     var sequence = [e];
     var eventParent = e;
 
     var i = 0;
     while (i < graph.length) {
-        if (graph[i].event.time == eventParent.time && graph[i].event.device == eventParent.device && graph[i].event.status == eventParent.status) {
+        console.log(i);
+        if (graph[i].event.time == eventParent.time && graph[i].event.device_id == eventParent.device_id && graph[i].event.status == eventParent.status) {
 
             if (graph[i].edges.length === 0) {
                 return sequence;
@@ -78,11 +91,10 @@ var getSequence = function(graph, e, freq) {
                 if (graph[i].edges[j].count >= freq) {
                     eventParent = graph[i].edges[j].event;
                     sequence.push(eventParent);
-                    i = 0;
+                    i = -1;
                     break;
                 }
             }
-            continue;
         }
         i++;
     }
@@ -90,7 +102,7 @@ var getSequence = function(graph, e, freq) {
 };
 
 
-module.exports.proccessEvent = function(user, status, device, device_id) {
+proccessEvent = function(user, status, device, device_id, time) {
 
 
     var d = new Date();
@@ -108,7 +120,7 @@ module.exports.proccessEvent = function(user, status, device, device_id) {
 
 
     var event = {
-        time: str1 + ':' + str,
+        time: time,//str1 + ':' + str,
         device: device,
         device_id: device_id,
         status: status
@@ -123,7 +135,7 @@ module.exports.proccessEvent = function(user, status, device, device_id) {
         return;
 
     }
-
+ 
 
     var old_event = user.lastEvent;
     old_event = JSON.parse(old_event);
@@ -136,13 +148,14 @@ module.exports.proccessEvent = function(user, status, device, device_id) {
     var current_sequence = user.sequence;
     current_sequence = JSON.parse(current_sequence);
 
+    var r = time.split(':');
 
-    var new_minutes = d.getMinutes();
-    var new_hours = d.getHours();
+    var new_minutes = parseInt(r[1]); //d.getMinutes();
+    var new_hours = parseInt(r[0]);//d.getHours();
 
     user.lastEvent = event;
 
-    if ((new_minutes - old_minutes) <= 1 && new_hours === old_hours) {
+    if ((new_minutes - old_minutes) <= 5 && new_hours === old_hours) {
 
         current_sequence.push(event);
         user.sequence = current_sequence;
