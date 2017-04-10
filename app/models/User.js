@@ -40,9 +40,14 @@ module.exports.defineUser = function(sequelize) {
             type: Sequelize.JSON,
             allowNull:true
         },
-        publicKey: {
+        public_key: {
             type: Sequelize.STRING,
             allowNull: true,
+            unique: true
+        },
+        salt: {
+            type: Sequelize.STRING,
+            allowNull: false,
             unique: true
         }
     },
