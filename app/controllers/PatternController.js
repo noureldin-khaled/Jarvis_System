@@ -8,6 +8,8 @@ module.exports.put= function(req, res,next){
 };
 
 
+
+
 module.exports.update = function(req, res, next) {
 
     req.checkBody('time', 'required').notEmpty();
@@ -41,11 +43,11 @@ module.exports.getPatterns = function(req, res, next) {
     var freq = 1;//user.frequency;
 
     graph = JSON.parse(graph);
-    var patterns = user.patterns;
-    patterns = JSON.parse(patterns);
-    if (patterns === null) {
-        patterns = [];
-    }
+    //var patterns = user.patterns;
+    //patterns = JSON.parse(patterns);
+    
+    patterns = [];
+    
     if(graph===null){
             res.status(200).json({
             status: 'OK',
@@ -63,13 +65,13 @@ module.exports.getPatterns = function(req, res, next) {
 
     }
 
-    user.patterns = patterns;
-    user.save().then(function() {
+    //user.patterns = patterns;
+    //user.save().then(function() {
         res.status(200).json({
             status: 'OK',
             patterns: patterns
         });
-    });
+    //});
 
 };
 
@@ -102,7 +104,9 @@ var getSequence = function(graph, e, freq) {
 };
 
 
-proccessEvent = function(user, status, device, device_id, time) {
+
+
+var proccessEvent = function(user, status, device, device_id, time) {
 
 
     var d = new Date();
@@ -120,7 +124,7 @@ proccessEvent = function(user, status, device, device_id, time) {
 
 
     var event = {
-        time: time,//str1 + ':' + str,
+        time: time===null ? (str1 + ':' + str) : time,
         device: device,
         device_id: device_id,
         status: status
@@ -241,6 +245,8 @@ module.exports.updateFrequency = function (){
     setInterval(updateUsers,86400000);
 
 };
+
+module.exports.proccessEvent = proccessEvent;
 
 function updateUsers(){
 

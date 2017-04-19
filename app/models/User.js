@@ -36,10 +36,6 @@ module.exports.defineUser = function(sequelize) {
          type: Sequelize.JSON,
          allowNull: true
       },
-      patterns: {
-         type: Sequelize.JSON,
-         allowNull:true
-      },
       frequency: {
          type: Sequelize.INTEGER,
          defaultValue: 3,
