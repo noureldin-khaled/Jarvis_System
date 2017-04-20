@@ -16,13 +16,36 @@ module.exports.update = function(req, res, next) {
 
     var user = req.user;
     var patterns = user.patterns;
+    var graph = user.graph;
+    graph = JSON.parse(graph);
     patterns = JSON.parse(patterns);
 
     var sequence_id = req.params.sequenceid;
     var event_id = req.params.eventid;
+    
+    var event = patterns[sequence_id][event_id];
+    var sequence = patterns[sequence_id];
+    var j =0;
+    for (var i = 0; i < graph.length; i++) {
+        if(graph[i].event.time == sequence[j].time && graph[i].event.device_id== sequence[j].device_id && graph[i].event.status == sequence[j].status){
+            if(j==event_id){
+                graph[i].event.time = req.body.time;
+                break;
+            }
+            j++;
+            for (var k = 0; i < graph[i].edges.length; i++) {
+                if(graph[i].edges[k].event.time == sequence[j].time && graph[i].edges[k].event.device_id == sequence[j].device_id && graph[i].edges[k].event.status == sequence[j].status){
+                    if(j==event_id){
+                        graph[i].edges[k].event.time = req.body.time;
+                        break;
+                    }
+                }
+            }
+        }
+    }
     patterns[sequence_id][event_id].time = req.body.time;
-
     user.patterns = patterns;
+    user.graph = graph;
 
 
     user.save().then(function(){
@@ -65,13 +88,13 @@ module.exports.getPatterns = function(req, res, next) {
 
     }
 
-    //user.patterns = patterns;
-    //user.save().then(function() {
+    user.patterns = patterns;
+    user.save().then(function() {
         res.status(200).json({
             status: 'OK',
             patterns: patterns
         });
-    //});
+    });
 
 };
 
@@ -152,10 +175,12 @@ var proccessEvent = function(user, status, device, device_id, time) {
     var current_sequence = user.sequence;
     current_sequence = JSON.parse(current_sequence);
 
-    var r = time.split(':');
+    var r;
+    if(time!==null)
+        r = time.split(':');
 
-    var new_minutes = parseInt(r[1]); //d.getMinutes();
-    var new_hours = parseInt(r[0]);//d.getHours();
+    var new_minutes = time===null ? d.getMinutes() : parseInt(r[1]);
+    var new_hours = time===null?   d.getHours(): parseInt(r[0]);
 
     user.lastEvent = event;
 
@@ -208,6 +233,8 @@ function addToGraph(sequence, user) {
             var new_node = {
                 count: i === 0 ? 1 : 0,
                 edges: [],
+                deleted: false,
+                color:null,
                 event: event
             };
             graph.push(new_node);
