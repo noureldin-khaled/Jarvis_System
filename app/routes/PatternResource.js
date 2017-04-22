@@ -5,6 +5,7 @@ module.exports = function(app){
 	app.get('/api/patterns',auth,Pattern.getPatterns);
 	app.put('/api/patterns/:sequenceid/:eventid',auth,Pattern.update);
 	app.put('/api/patterns',auth,Pattern.put);
+	app.delete('/api/patterns/:sequenceid',auth,Pattern.delete);
 	Pattern.updateFrequency();
 
 };

@@ -1,12 +1,48 @@
 var User = require('../models/User').User;
 
 
-module.exports.put= function(req, res,next){
+module.exports.put = function(req, res, next) {
 
-    proccessEvent(req.user,req.body.status,req.body.device,req.body.device_id, req.body.time);
-    res.status(200).json({"message":"OK"});
+    proccessEvent(req.user, req.body.status, req.body.device, req.body.device_id, req.body.time);
+    res.status(200).json({ "message": "OK" });
 };
 
+
+module.exports.delete = function(req, res, next) {
+
+    var user = req.user;
+    var patterns = user.patterns;
+    patterns = JSON.parse(patterns);
+    var graph = user.graph;
+    graph = JSON.parse(graph);
+
+    var sequence_id = req.params.sequenceid;
+
+    var j = 0;
+    for (var i = 0; i < graph.length; i++) {
+        if (j >= patterns[sequence_id].length - 1)
+            break;
+        if (graph[i].event.time == patterns[sequence_id][j].time && graph[i].event.device_id == patterns[sequence_id][j].device_id && graph[i].event.status == patterns[sequence_id][j].status) {
+            j++;
+            for (var k = 0; k < graph[i].edges.length; k++) {
+                if (graph[i].edges[k].event.time == patterns[sequenceid][j].time && graph[i].edges[k].event.device_id == patterns[sequence_id][j].device_id && graph[i].edges[k].event.status == patterns[sequence_id][j].status) {
+                    graph[i].edges.splice(k, 1);
+                    break;
+                }
+            }
+        }
+    }
+    patterns.splice(sequence_id, 1);
+    user.patterns = patterns;
+    user.graph = graph;
+
+    user.save().then(function() {
+        res.status(200).json({
+            status: 'succeeded',
+            message: 'Dsone'
+        });
+    });
+};
 
 
 
@@ -22,20 +58,20 @@ module.exports.update = function(req, res, next) {
 
     var sequence_id = req.params.sequenceid;
     var event_id = req.params.eventid;
-    
+
     var event = patterns[sequence_id][event_id];
     var sequence = patterns[sequence_id];
-    var j =0;
+    var j = 0;
     for (var i = 0; i < graph.length; i++) {
-        if(graph[i].event.time == sequence[j].time && graph[i].event.device_id== sequence[j].device_id && graph[i].event.status == sequence[j].status){
-            if(j==event_id){
+        if (graph[i].event.time == sequence[j].time && graph[i].event.device_id == sequence[j].device_id && graph[i].event.status == sequence[j].status) {
+            if (j == event_id) {
                 graph[i].event.time = req.body.time;
                 break;
             }
             j++;
             for (var k = 0; i < graph[i].edges.length; i++) {
-                if(graph[i].edges[k].event.time == sequence[j].time && graph[i].edges[k].event.device_id == sequence[j].device_id && graph[i].edges[k].event.status == sequence[j].status){
-                    if(j==event_id){
+                if (graph[i].edges[k].event.time == sequence[j].time && graph[i].edges[k].event.device_id == sequence[j].device_id && graph[i].edges[k].event.status == sequence[j].status) {
+                    if (j == event_id) {
                         graph[i].edges[k].event.time = req.body.time;
                         break;
                     }
@@ -48,10 +84,10 @@ module.exports.update = function(req, res, next) {
     user.graph = graph;
 
 
-    user.save().then(function(){
+    user.save().then(function() {
         res.status(200).json({
-            status:'succeeded',
-            message:'Done'
+            status: 'succeeded',
+            message: 'Done'
         });
     });
 
@@ -63,16 +99,16 @@ module.exports.getPatterns = function(req, res, next) {
 
     var user = req.user;
     var graph = user.graph;
-    var freq = 1;//user.frequency;
+    var freq = 1; //user.frequency;
 
     graph = JSON.parse(graph);
     //var patterns = user.patterns;
     //patterns = JSON.parse(patterns);
-    
+
     patterns = [];
-    
-    if(graph===null){
-            res.status(200).json({
+
+    if (graph === null) {
+        res.status(200).json({
             status: 'OK',
             patterns: patterns
         });
@@ -134,20 +170,20 @@ var proccessEvent = function(user, status, device, device_id, time) {
 
     var d = new Date();
 
-    var mins  = d.getMinutes();
+    var mins = d.getMinutes();
 
-    var str = ''+mins;
-    if(mins<10)
-        str = '0'+str;
+    var str = '' + mins;
+    if (mins < 10)
+        str = '0' + str;
 
-    var hours  = d.getHours();
-    var str1 = ''+hours;
-    if(hours<10)
-        str1 = '0'+str1;
+    var hours = d.getHours();
+    var str1 = '' + hours;
+    if (hours < 10)
+        str1 = '0' + str1;
 
 
     var event = {
-        time: time===null ? (str1 + ':' + str) : time,
+        time: time === null ? (str1 + ':' + str) : time,
         device: device,
         device_id: device_id,
         status: status
@@ -162,7 +198,7 @@ var proccessEvent = function(user, status, device, device_id, time) {
         return;
 
     }
- 
+
 
     var old_event = user.lastEvent;
     old_event = JSON.parse(old_event);
@@ -176,11 +212,11 @@ var proccessEvent = function(user, status, device, device_id, time) {
     current_sequence = JSON.parse(current_sequence);
 
     var r;
-    if(time!==null)
+    if (time !== null)
         r = time.split(':');
 
-    var new_minutes = time===null ? d.getMinutes() : parseInt(r[1]);
-    var new_hours = time===null?   d.getHours(): parseInt(r[0]);
+    var new_minutes = time === null ? d.getMinutes() : parseInt(r[1]);
+    var new_hours = time === null ? d.getHours() : parseInt(r[0]);
 
     user.lastEvent = event;
 
@@ -233,8 +269,7 @@ function addToGraph(sequence, user) {
             var new_node = {
                 count: i === 0 ? 1 : 0,
                 edges: [],
-                deleted: false,
-                color:null,
+                color: null,
                 event: event
             };
             graph.push(new_node);
@@ -267,22 +302,22 @@ function addToGraph(sequence, user) {
     user.save().then(function() {});
 }
 
-module.exports.updateFrequency = function (){
+module.exports.updateFrequency = function() {
 
-    setInterval(updateUsers,86400000);
+    setInterval(updateUsers, 86400000);
 
 };
 
 module.exports.proccessEvent = proccessEvent;
 
-function updateUsers(){
+function updateUsers() {
 
-        User.findAll().then(function(users){
+    User.findAll().then(function(users) {
 
         for (var i = 0; i < users.length; i++) {
             var timer = users[i].timer;
             var freq = users[i].frequency;
-            if(timer === 0){
+            if (timer === 0) {
                 freq++;
                 users[i].frequency = freq;
             } else {
