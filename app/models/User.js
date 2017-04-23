@@ -36,8 +36,18 @@ module.exports.defineUser = function(sequelize) {
          type: Sequelize.JSON,
          allowNull: true
       },
-      patterns: {
+      patterns:{
          type: Sequelize.JSON,
+         allowNull: true
+      },
+      frequency: {
+         type: Sequelize.INTEGER,
+         defaultValue: 3,
+         allowNull:true
+      },
+      timer:{
+         type:Sequelize.INTEGER,
+         defaultValue: 259200000,
          allowNull:true
       }
    },
