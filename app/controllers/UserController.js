@@ -52,7 +52,6 @@ module.exports.indexForDevice = function(req, res, next) {
             var found = false;
             for (var j = 0; j < currentUser.devices.length && found === false; j++) {
                 var currentDevice = currentUser.devices[j];
-                console.log(currentDevice);
                 if (currentDevice.id == req.params.id) {
                     found = true;
                 }
@@ -85,8 +84,6 @@ module.exports.indexForDevice = function(req, res, next) {
             status:'failed',
             message: 'Internal server error'
         });
-
-        console.log(err);
     });
 };
 
