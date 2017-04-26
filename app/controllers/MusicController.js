@@ -1,6 +1,6 @@
 
 module.exports.play = function(req, res, next) {
-
+    console.log("here");
     req.checkBody('name', 'required').notEmpty();
 
     var errors = req.validationErrors();
@@ -18,22 +18,12 @@ module.exports.play = function(req, res, next) {
     var http = require('http');
     var client = new net.Socket();
 
+    var request = require("request");
 
-    http.get({
-        host: 'edison-gateway.firebaseio.com',
-        path: '/DNS/edisonIP.json'
-    }, function(response) {
-        
-        var body = '';
-        response.on('data', function(d) {
-            body += d;
-        });
-        response.on('end', function() {
-
-            var parsed = JSON.parse(body);
-            var credentials = { "username":"hazem", "password":"hazem"};
-
-            client.connect(1337, parsed.myIP, function() {
+    request("https://edison-gateway.firebaseio.com/DNS/edisonIP.json", function(error, response, body) {
+        body = JSON.parse(body);
+        var credentials = { "username":"hazem", "password":"hazem"};
+            client.connect(1337, body.myIP, function() {
                 console.log('Connected');
                 client.write(JSON.stringify(credentials));
             });
@@ -56,25 +46,15 @@ module.exports.play = function(req, res, next) {
 
             client.on('close', function() {
                 console.log('Connection closed');
+                res.status(500).json({
+                    status: 'failed',
+                    message: 'Connection closed'
+                });
             });
-            
-        });
     });
 
-    // client.connect(1337, '192.168.0.103', function() {
-    //     console.log('Connected');
-    //     client.write("hazem+hazem");
-    // });
+  };  
 
-    // client.on('data', function(data) {
-    //     if(data == "successfully logged in"){
-    //         client.write("play song-name")
-    //     }
-    // });
 
-    // client.on('close', function() {
-    //     console.log('Connection closed');
-    // });
 
-};
 
