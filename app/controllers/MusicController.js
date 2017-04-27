@@ -31,10 +31,6 @@ module.exports.play = function(req, res, next) {
             client.on('data', function(data) {
                 if(data == "successfully logged in"){
                     client.write("play song-name");
-                    res.status(200).json({
-                        status: 'succeeded',
-                        code: result
-                    });
                 }
                 else{
                     res.status(500).json({
@@ -46,8 +42,8 @@ module.exports.play = function(req, res, next) {
 
             client.on('close', function() {
                 console.log('Connection closed');
-                res.status(500).json({
-                    status: 'failed',
+                res.status(200).json({
+                    status: 'succeeded',
                     message: 'Connection closed'
                 });
             });
