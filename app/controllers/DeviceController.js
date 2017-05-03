@@ -3,7 +3,6 @@ var Script = require('../script');
 var Patterns = require('./PatternController');
 
 module.exports.store = function(req, res, next) {
-
     req.checkBody('name', 'required').notEmpty();
     req.checkBody('type', 'required').notEmpty();
     req.checkBody('type', 'invalid').isIn(['Lock', 'Light Bulb']);
@@ -38,10 +37,13 @@ module.exports.store = function(req, res, next) {
 
             device.save().then(function(newDevice) {
                 req.user.addDevice(newDevice);
-                res.status(200).json({
+                res.statusCode = 200;
+                res.key = req.user.aes_public_key;
+                res.response = {
                     status: 'succeeded',
                     device: newDevice
-                });
+                };
+                next();
             }).catch(function(err) {
                 res.status(500).json({
                     status: 'failed',
@@ -54,8 +56,8 @@ module.exports.store = function(req, res, next) {
             var errors = [];
             errors.push({ param: 'name', msg: 'unique violation'});
             res.status(400).json({
-               status: 'failed',
-               errors: errors
+                status: 'failed',
+                errors: errors
             });
         }
     }).catch(function(err) {
@@ -68,8 +70,8 @@ module.exports.store = function(req, res, next) {
 };
 
 module.exports.delete = function(req, res, next) {
-
     req.checkParams('id', 'invalid').isInt();
+
     var errors = req.validationErrors();
 
     if (errors) {
@@ -83,10 +85,13 @@ module.exports.delete = function(req, res, next) {
 
     Device.destroy({where : {id: req.params.id}}).then(function(affected){
         if(affected === 1){
-            res.status(200).json({
+            res.statusCode = 200;
+            res.key = req.user.aes_public_key;
+            res.response = {
                 status: "succeeded",
                 message: "Device deleted successfully."
-            });
+            };
+            next();
         }
         else{
             res.status(404).json({
@@ -173,10 +178,13 @@ module.exports.update = function(req, res, next) {
                 if (results.length === 0) {
                     Device.update(obj, {where : {id: req.params.id}}).then(function(affected){
                         if(affected[0] === 1){
-                            res.status(200).json({
+                            res.statusCode = 200;
+                            res.key = req.user.aes_public_key;
+                            res.response = {
                                 status: "succeeded",
                                 message: "Device updated successfully."
-                            });
+                            };
+                            next();
                         }
                         else{
                             res.status(404).json({
@@ -195,8 +203,8 @@ module.exports.update = function(req, res, next) {
                     var errors = [];
                     errors.push({ param: 'name', msg: 'unique violation'});
                     res.status(400).json({
-                       status: 'failed',
-                       errors: errors
+                        status: 'failed',
+                        errors: errors
                     });
                 }
             }).catch(function(err) {
@@ -211,14 +219,14 @@ module.exports.update = function(req, res, next) {
 };
 
 module.exports.index = function(req, res, next) {
-
     req.user.getDevices().then(function(devices){
-
-        res.status(200).json({
+        res.statusCode = 200;
+        res.key = req.user.aes_public_key;
+        res.response = {
             status: 'succeeded',
             devices: devices
-        });
-
+        };
+        next();
     }).catch(function(err) {
         res.status(500).json({
             status: 'failed',
@@ -273,18 +281,23 @@ module.exports.handle = function(req, res, next) {
                         status: 'failed',
                         message: 'Internal server error'
                     });
-
-                    return;
                 }
                 else {
                     Device.update({ status: true }, { where : { id : device.id } }).then(function(newDevice) {
-                        res.status(200).json({
+                        res.statusCode = 200;
+                        res.key = req.user.aes_public_key;
+                        res.response = {
                             status: 'succeeded',
                             message: message
+                        };
+                        next();
+                    }).catch(function(err) {
+                        res.status(500).json({
+                            status: 'failed',
+                            message: 'Internal server error',
+                            error: err
                         });
-
                     });
-                    return;
                 }
             });
         }
@@ -295,22 +308,27 @@ module.exports.handle = function(req, res, next) {
                         status: 'failed',
                         message: 'Internal server error'
                     });
-
-                    return;
                 }
                 else {
                     Device.update({ status: false }, { where : { id : device.id } }).then(function(newDevice) {
-                        res.status(200).json({
+                        res.statusCode = 200;
+                        res.key = req.user.aes_public_key;
+                        res.response = {
                             status: 'succeeded',
                             message: message
-                        });
+                        };
                         Patterns.proccessEvent(req.user,device.name,req.body.status);
-                        return;
+                        next();
+                    }).catch(function(err) {
+                        res.status(500).json({
+                            status: 'failed',
+                            message: 'Internal server error',
+                            error: err
+                        });
                     });
                 }
             });
         }
-
     });
 };
 
@@ -338,11 +356,13 @@ module.exports.scan = function(req, res, next) {
                         returnDevices.push(results[i]);
                     }
                 }
-
-                res.status(200).json({
+                res.statusCode = 200;
+                res.key = req.user.aes_public_key;
+                res.response = {
                     status: 'succeeded',
                     devices: returnDevices
-                });
+                };
+                next();
             }).catch(function(err) {
                 res.status(500).json({
                     status: 'failed',

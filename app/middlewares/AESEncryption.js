@@ -13,7 +13,7 @@ module.exports = function(req, res, next) {
         var encryptedBytes = aesCtr.encrypt(bodyBytes);
 
         res.status(res.statusCode).json({
-            body: encryptedBytes
+            body: JSON.stringify(encryptedBytes)
         });
     } catch (error) {
         res.status(400).json({

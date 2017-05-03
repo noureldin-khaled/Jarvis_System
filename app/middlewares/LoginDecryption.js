@@ -10,19 +10,32 @@ module.exports = function(req, res, next) {
         req.body = req.body.body;
 
         var username = req.headers.username;
+        if (!username) {
+            res.status(401).json({
+               status:'failed',
+               message: 'Please attach the username in the headers.'
+            });
+
+            return;
+        }
 
         User.findOne({ where : { username: username } }).then(function(user) {
             if (user) {
                 try {
-                    var body = req.body;
-                    console.log(body);
+                    var body = JSON.parse(req.body);
                     var client_pu = user.aes_public_key;
                     var sharedKey = ecdh.computeSecret(new Buffer.from(JSON.parse(client_pu)));
                     var aesCtr = new aesjs.ModeOfOperation.ctr(sharedKey);
-                    var decryptedBytes = aesCtr.decrypt(body);
+                    var arr = [];
+                    for(var p in Object.getOwnPropertyNames(body)) {
+                        arr[p] = body[p];
+                    }
+
+                    var decryptedBytes = aesCtr.decrypt(arr);
                     var decrypted = aesjs.utils.utf8.fromBytes(decryptedBytes);
 
                     req.body = JSON.parse(decrypted);
+                    req.body.username = username;
                     next();
                 } catch (error) {
                     console.log(error);

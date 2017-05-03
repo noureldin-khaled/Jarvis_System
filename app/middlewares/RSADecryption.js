@@ -1,6 +1,7 @@
 var cryptico = require('cryptico');
 var rsa_pr = cryptico.generateRSAKey(process.env.RSA_PASSWORD, 1024);
 var rsa_pu = cryptico.publicKeyString(rsa_pr);
+process.env.RSA_PU = rsa_pu;
 
 module.exports = function(req, res, next) {
     if (req.body.body) {

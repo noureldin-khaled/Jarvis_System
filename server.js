@@ -58,18 +58,52 @@ var listenForBroadcast = function(port) {
 
     server.bind(9000);
 };
-var crypto = require('crypto');
-var aesjs = require('aes-js');
-var ecdh = crypto.createECDH('secp256k1');
-var server_pr = new Buffer.from(JSON.parse(process.env.AES_PR));
-ecdh.setPrivateKey(server_pr);
-var sharedKey = ecdh.computeSecret(new Buffer.from({"type":"Buffer","data":[2,53,53,225,37,226,129,131,187,154,26,156,90,101,119,79,232,163,151,40,179,223,134,61,196,166,163,133,178,167,32,16,127]}));
-var aesCtr = new aesjs.ModeOfOperation.ctr(sharedKey);
-var body = { password: "1234" };
-var bodyBytes = aesjs.utils.utf8.toBytes(body);
-var encryptedBytes = aesCtr.encrypt(bodyBytes);
+// var crypto = require('crypto');
+// var aesjs = require('aes-js');
+// var ecdh = crypto.createECDH('secp256k1');
+// // var server_pr = new Buffer.from(JSON.parse(process.env.AES_PR));
+// // ecdh.setPrivateKey(server_pr);
+// var sharedKey = {"type":"Buffer","data":[201,26,214,142,3,183,67,59,180,48,148,233,201,38,134,9,58,209,131,185,62,9,114,2,117,117,196,85,201,26,38,190]};
+// var aesCtr = new aesjs.ModeOfOperation.ctr(new Buffer.from(sharedKey));
+// var body = { password: "1234" };
+// var bodyBytes = aesjs.utils.utf8.toBytes(body);
+// var encryptedBytes = aesCtr.encrypt(bodyBytes);
+// console.log(JSON.stringify(encryptedBytes));
+// var s = JSON.stringify(encryptedBytes);
+// // var s = "{\"0\":239,\"1\":93,\"2\":60,\"3\":177,\"4\":195,\"5\":137,\"6\":160,\"7\":83,\"8\":220,\"9\":17,\"10\":95,\"11\":163,\"12\":202,\"13\":212,\"14\":25}";
+// console.log(JSON.parse(s));
 
+// var https = require('https');
+// https.get('https://mighty-savannah-17728.herokuapp.com/AesDecrypt/{"type":"Buffer","data":[201,26,214,142,3,183,67,59,180,48,148,233,201,38,134,9,58,209,131,185,62,9,114,2,117,117,196,85,201,26,38,190]}/{"0":207,"1":18,"2":124,"3":171,"4":199,"5":153,"6":167,"7":4,"8":252,"9":1,"10":81,"11":228,"12":147,"13":128,"14":102,"15":212,"16":228,"17":99,"18":120,"19":219,"20":31,"21":37}', function(res) {
+//   console.log('statusCode:', res.statusCode);
+//   console.log('headers:', res.headers);
 //
+//   res.on('data', function(d) {
+//     console.log(JSON.parse(d));
+//   });
+//
+// }).on('error', function(e) {
+//   console.error(e);
+// });
+// var cryptico = require('cryptico');
+// var rsa_pr = cryptico.generateRSAKey(process.env.RSA_PASSWORD, 1024);
+// var rsa_pu = cryptico.publicKeyString(rsa_pr);
+// console.log(rsa_pu);
+
+// var crypto = require('crypto');
+// var aesjs = require('aes-js');
+// var ecdh = crypto.createECDH('secp256k1');
+// var s = {
+//     "s": "s"
+// };
+// console.log(s);
+// var server_pr = new Buffer.from(JSON.parse(process.env.AES_PR));
+// console.log(process.env.AES_PR);
+// ecdh.setPrivateKey(server_pr);
+// var client_pu = {"type":"Buffer","data":[2,1,128,25,243,245,227,148,149,65,147,65,178,250,154,159,18,170,128,33,207,239,52,160,130,13,233,206,151,91,139,81,131]};
+// var sharedKey = ecdh.computeSecret(new Buffer.from(client_pu));
+// console.log(JSON.stringify(sharedKey));
+
 // var cryptico = require('cryptico');
 // var rsa_pr = cryptico.generateRSAKey(process.env.RSA_PASSWORD, 1024);
 // var rsa_pu = cryptico.publicKeyString(rsa_pr);

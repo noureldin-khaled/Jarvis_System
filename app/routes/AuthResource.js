@@ -3,12 +3,12 @@ module.exports = function(app) {
    var auth = require('../middlewares/AuthMiddleware');
    var rsa_decrypt = require('../middlewares/RSADecryption');
    var aes_encrypt = require('../middlewares/AESEncryption');
-   var aes_decrypt = require('../middlewares/AESDecryption');
    var login_decrypt = require('../middlewares/LoginDecryption');
 
-   app.post('/api/login', login_decrypt, AuthController.login);
+   app.post('/api/login', login_decrypt, AuthController.login, aes_encrypt);
    app.post('/api/exchange', AuthController.exchange);
+   app.post('/api/updateKey', AuthController.updateKey);
    app.post('/api/register', rsa_decrypt, AuthController.register);
    app.get('/api/salt/:username', AuthController.salt, aes_encrypt);
-   app.get('/api/logout', auth, AuthController.logout);
+   app.get('/api/logout', auth, AuthController.logout, aes_encrypt);
 };
