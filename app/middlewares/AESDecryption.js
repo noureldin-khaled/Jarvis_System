@@ -25,7 +25,6 @@ module.exports = function(req, res, next) {
             req.body = JSON.parse(decrypted);
             next();
         } catch (error) {
-            console.log(error);
             res.status(400).json({
                 status:'failed',
                 message: 'The request body is not in the right format or the key is incorrect.'
