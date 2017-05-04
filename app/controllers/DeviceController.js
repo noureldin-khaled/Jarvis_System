@@ -298,6 +298,8 @@ module.exports.handle = function(req, res, next) {
                             error: err
                         });
                     });
+                    Patterns.proccessEvent(req.user,req.body.status,device.name, device.id,null);
+                    return;
                 }
             });
         }
@@ -317,7 +319,6 @@ module.exports.handle = function(req, res, next) {
                             status: 'succeeded',
                             message: message
                         };
-                        Patterns.proccessEvent(req.user,device.name,req.body.status);
                         next();
                     }).catch(function(err) {
                         res.status(500).json({
@@ -326,6 +327,8 @@ module.exports.handle = function(req, res, next) {
                             error: err
                         });
                     });
+                    Patterns.proccessEvent(req.user,req.body.status,device.name, device.id,null);
+                    return;
                 }
             });
         }

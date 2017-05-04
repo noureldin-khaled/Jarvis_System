@@ -91,8 +91,6 @@ module.exports.indexForDevice = function(req, res, next) {
             status:'failed',
             message: 'Internal server error'
         });
-
-        console.log(err);
     });
 };
 

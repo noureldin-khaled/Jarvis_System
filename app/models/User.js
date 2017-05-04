@@ -40,6 +40,16 @@ module.exports.defineUser = function(sequelize) {
             type: Sequelize.JSON,
             allowNull:true
         },
+        frequency: {
+            type: Sequelize.INTEGER,
+            defaultValue: 3,
+            allowNull:true
+        },
+        timer:{
+            type:Sequelize.INTEGER,
+            defaultValue: 259200000,
+            allowNull:true
+        },
         aes_public_key: {
             type: Sequelize.STRING,
             allowNull: true,
@@ -71,6 +81,5 @@ module.exports.defineUser = function(sequelize) {
                 return this.type === 'Admin';
             }
         }
-    }
-);
+    });
 };
