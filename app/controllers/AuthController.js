@@ -120,9 +120,51 @@ module.exports.exchange = function(req, res, next) {
         return;
     }
 
+    User.update({ aes_public_key: req.body.aes_public_key }, { where: { username: req.body.username } }).then(function(affected) {
+        if (affected[0] === 1) {
+           res.status(200).json({
+              status: 'succeeded',
+              aes_public_key: process.env.AES_PU
+           });
+        }
+        else {
+           res.status(404).json({
+              status: 'failed',
+              message: 'Either the Username or Password is incorrect.'
+           });
+        }
+    }).catch(function(err) {
+        res.status(500).json({
+            status: 'failed',
+            message: 'Internal server error',
+            error: err
+        });
+    });
+};
+
+module.exports.register = function(req, res, next) {
+    req.checkBody('username', 'required').notEmpty();
+    req.sanitizeBody('username').escape();
+    req.sanitizeBody('username').trim();
+
+    req.checkBody('password', 'required').notEmpty();
+    req.checkBody('salt', 'required').notEmpty();
+
+    var errors = req.validationErrors();
+
+    if (errors) {
+        res.status(400).json({
+            status: 'failed',
+            errors: errors
+        });
+
+        return;
+    }
+
     var user = User.build({
         username: req.body.username,
-        aes_public_key: req.body.aes_public_key
+        password: req.body.password,
+        salt: req.body.salt
     });
 
     User.findAll().then(function(entries) {
@@ -135,9 +177,7 @@ module.exports.exchange = function(req, res, next) {
 
         user.save().then(function(usr) {
             res.status(200).json({
-                status: 'succeeded',
-                aes_public_key: process.env.AES_PU,
-                rsa_public_key: process.env.RSA_PU
+                status: 'succeeded'
             });
         }).catch(function(err) {
             if (err.message === 'Validation error') {
@@ -175,95 +215,6 @@ module.exports.exchange = function(req, res, next) {
             error: err
         });
     });
-};
-
-module.exports.updateKey = function(req, res, next) {
-    req.checkBody('username', 'required').notEmpty();
-    req.sanitizeBody('username').escape();
-    req.sanitizeBody('username').trim();
-
-    req.checkBody('aes_public_key', 'required').notEmpty();
-
-    var errors = req.validationErrors();
-
-    if (errors) {
-        res.status(400).json({
-            status: 'failed',
-            errors: errors
-        });
-
-        return;
-    }
-
-    User.update({ aes_public_key: req.body.aes_public_key }, { where: { username: req.body.username } }).then(function(affected) {
-        if (affected[0] === 1) {
-           res.status(200).json({
-              status: 'succeeded',
-              aes_public_key: process.env.AES_PU,
-              rsa_public_key: process.env.RSA_PU
-           });
-        }
-        else {
-           res.status(404).json({
-              status: 'failed',
-              message: 'Either the Username or Password is incorrect.'
-           });
-        }
-    }).catch(function(err) {
-        res.status(500).json({
-            status: 'failed',
-            message: 'Internal server error',
-            error: err
-        });
-    });
-};
-
-module.exports.register = function(req, res, next) {
-    req.checkBody('username', 'required').notEmpty();
-    req.sanitizeBody('username').escape();
-    req.sanitizeBody('username').trim();
-
-    req.checkBody('password', 'required').notEmpty();
-    req.checkBody('salt', 'required').notEmpty();
-
-    var errors = req.validationErrors();
-
-    if (errors) {
-        res.status(400).json({
-            status: 'failed',
-            errors: errors
-        });
-
-        return;
-    }
-
-    User.update({
-        password: req.body.password,
-        salt: req.body.salt
-    }, {
-        where: {
-            username: req.body.username
-        }
-    }).then(function(affected) {
-        if (affected[0] === 1) {
-           res.status(200).json({
-              status: 'succeeded'
-           });
-        }
-        else {
-           res.status(404).json({
-              status: 'failed',
-              message: 'Either the Username or Password is incorrect.'
-           });
-        }
-    }).catch(function(err) {
-        res.status(500).json({
-            status: 'failed',
-            message: 'Internal server error',
-            error: err
-        });
-    });
-
 };
 
 module.exports.salt = function(req, res, next) {

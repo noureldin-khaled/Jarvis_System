@@ -7,7 +7,6 @@ module.exports = function(app) {
 
    app.post('/api/login', login_decrypt, AuthController.login, aes_encrypt);
    app.post('/api/exchange', AuthController.exchange);
-   app.post('/api/updateKey', AuthController.updateKey);
    app.post('/api/register', rsa_decrypt, AuthController.register);
    app.get('/api/salt/:username', AuthController.salt, aes_encrypt);
    app.get('/api/logout', auth, AuthController.logout, aes_encrypt);

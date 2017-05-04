@@ -13,7 +13,7 @@ module.exports.defineUser = function(sequelize) {
             set: function(value){
                 this.setDataValue('password', bcrypt.hashSync(value));
             },
-            allowNull: true
+            allowNull: false
         },
         type: {
             type: Sequelize.ENUM('Admin', 'Normal'),
@@ -42,12 +42,12 @@ module.exports.defineUser = function(sequelize) {
         },
         aes_public_key: {
             type: Sequelize.STRING,
-            allowNull: false,
+            allowNull: true,
             unique: true
         },
         salt: {
             type: Sequelize.STRING,
-            allowNull: true,
+            allowNull: false,
             unique: true
         },
         nonce: {
