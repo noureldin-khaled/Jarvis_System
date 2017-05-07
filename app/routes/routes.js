@@ -5,6 +5,7 @@ module.exports = function(app) {
    require('./UserResource')(app);
    require('./PatternResource')(app);
    require('./CountryResource')(app);
+   require('./MusicResource')(app);
 
 
    app.use(function(req, res, next) {
