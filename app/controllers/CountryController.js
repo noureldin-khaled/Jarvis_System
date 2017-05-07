@@ -19,10 +19,17 @@ module.exports.cityConverter = function(req, res, next) {
         return city.name.toUpperCase() == req.body.cityName.toUpperCase()
     });
    if(result){
-    res.status(200).json({
-      status: 'succeeded',
-      code: result
-    });
+    res.statusCode = 200;
+        res.key = req.user.aes_public_key;
+        res.response = {
+            status: 'succeeded',
+            code: result
+        };
+        next();
+    // res.status(200).json({
+    //   status: 'succeeded',
+    //   code: result
+    // });
    }
    else{
     res.status(500).json({
