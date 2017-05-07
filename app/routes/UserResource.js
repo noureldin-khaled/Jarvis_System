@@ -4,10 +4,11 @@ module.exports = function(app) {
 	var admin = require('../middlewares/AdminMiddleware');
 	var aes_encrypt = require('../middlewares/AESEncryption');
 	var aes_decrypt = require('../middlewares/AESDecryption');
+	var nonce = require('../middlewares/NonceMiddleware');
 
-	app.get('/api/user', auth, admin, UserController.index, aes_encrypt);
-	app.get('/api/user/:id', auth, admin, UserController.indexForDevice, aes_encrypt);
-	app.put('/api/user/:id', auth, admin, aes_decrypt, UserController.updateAuth, aes_encrypt);
-	app.put('/api/user', auth, aes_decrypt, UserController.update, aes_encrypt);
-	app.post('/api/user/:user_id/:device_id', auth, admin, UserController.privilege, aes_encrypt);
+	app.post('/api/user', auth, admin, aes_decrypt, nonce, UserController.index, aes_encrypt);
+	app.post('/api/user/:id', auth, admin, aes_decrypt, nonce, UserController.indexForDevice, aes_encrypt);
+	app.put('/api/user/:id', auth, admin, aes_decrypt, nonce, UserController.updateAuth, aes_encrypt);
+	app.put('/api/user', auth, aes_decrypt, nonce, UserController.update, aes_encrypt);
+	app.post('/api/user/:user_id/:device_id', auth, admin, aes_decrypt, nonce, UserController.privilege, aes_encrypt);
 };

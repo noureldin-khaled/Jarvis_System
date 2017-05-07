@@ -1,4 +1,3 @@
-var User = require('../models/User').User;
 var crypto = require('crypto');
 var aesjs = require('aes-js');
 var ecdh = crypto.createECDH('secp256k1');
@@ -8,7 +7,6 @@ ecdh.setPrivateKey(server_pr);
 module.exports = function(req, res, next) {
     if (req.body.body) {
         req.body = req.body.body;
-
         try {
             var body = JSON.parse(req.body);
             var client_pu = req.user.aes_public_key;

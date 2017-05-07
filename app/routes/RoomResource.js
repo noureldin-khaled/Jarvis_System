@@ -4,9 +4,10 @@ module.exports = function(app) {
 	var admin = require('../middlewares/AdminMiddleware');
 	var aes_encrypt = require('../middlewares/AESEncryption');
 	var aes_decrypt = require('../middlewares/AESDecryption');
+	var nonce = require('../middlewares/NonceMiddleware');
 
-	app.post('/api/room', auth, admin, aes_decrypt, RoomController.store, aes_encrypt);
-	app.put('/api/room/:id', auth, admin, aes_decrypt, RoomController.update, aes_encrypt);
-	app.delete('/api/room/:id', auth, admin, RoomController.delete, aes_encrypt);
-	app.get('/api/room', auth, RoomController.index, aes_encrypt);
+	app.post('/api/room', auth, admin, aes_decrypt, nonce, RoomController.store, aes_encrypt);
+	app.put('/api/room/:id', auth, admin, aes_decrypt, nonce, RoomController.update, aes_encrypt);
+	app.post('/api/room/:id', auth, admin, aes_decrypt, nonce, RoomController.delete, aes_encrypt);
+	app.post('/api/rooms', auth, aes_decrypt, nonce, RoomController.index, aes_encrypt);
 };

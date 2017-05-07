@@ -120,19 +120,12 @@ module.exports.exchange = function(req, res, next) {
         return;
     }
 
-    User.update({ aes_public_key: req.body.aes_public_key }, { where: { username: req.body.username } }).then(function(affected) {
-        if (affected[0] === 1) {
-           res.status(200).json({
-              status: 'succeeded',
-              aes_public_key: process.env.AES_PU
-           });
-        }
-        else {
-           res.status(404).json({
-              status: 'failed',
-              message: 'Either the Username or Password is incorrect.'
-           });
-        }
+    req.user.aes_public_key = req.body.aes_public_key;
+    req.user.save().then(function(user) {
+        res.status(200).json({
+           status: 'succeeded',
+           aes_public_key: process.env.AES_PU
+        });
     }).catch(function(err) {
         res.status(500).json({
             status: 'failed',
@@ -149,6 +142,7 @@ module.exports.register = function(req, res, next) {
 
     req.checkBody('password', 'required').notEmpty();
     req.checkBody('salt', 'required').notEmpty();
+    req.checkBody('nonce', 'required').notEmpty();
 
     var errors = req.validationErrors();
 
@@ -164,7 +158,8 @@ module.exports.register = function(req, res, next) {
     var user = User.build({
         username: req.body.username,
         password: req.body.password,
-        salt: req.body.salt
+        salt: req.body.salt,
+        nonce: req.body.nonce
     });
 
     User.findAll().then(function(entries) {

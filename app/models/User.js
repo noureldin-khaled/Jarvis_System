@@ -62,7 +62,7 @@ module.exports.defineUser = function(sequelize) {
         },
         nonce: {
             type: Sequelize.STRING,
-            allowNull: true
+            allowNull: false
         }
     },
     {
