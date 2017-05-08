@@ -4,6 +4,8 @@ module.exports = function(app) {
    require('./RoomResource')(app);
    require('./UserResource')(app);
    require('./PatternResource')(app);
+   require('./CountryResource')(app);
+
 
    app.use(function(req, res, next) {
       res.status(404).json({

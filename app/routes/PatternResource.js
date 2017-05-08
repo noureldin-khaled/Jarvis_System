@@ -8,5 +8,4 @@ module.exports = function(app){
 	app.delete('/api/patterns/:sequenceid',auth,Pattern.delete);
 	app.get('/api/graph',auth,Pattern.getGraph);
 	Pattern.updateFrequency();
-
 };
