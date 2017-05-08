@@ -230,6 +230,12 @@ module.exports.index = function(req, res, next) {
 };
 
 module.exports.handle = function(req, res, next) {
+    console.log('Made it!!'+ req.body.status +' and '+req.params.id);
+     res.status(200).json({
+        status: 'succeeded',
+        message: 'OK'
+    });    
+    return;
     req.checkParams('id', 'invalid').isInt();
     req.checkBody('status', 'required').notEmpty();
     req.checkBody('status', 'invalid').isBoolean();
