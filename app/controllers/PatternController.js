@@ -44,10 +44,17 @@ module.exports.delete = function(req, res, next) {
     user.graph = graph;
 
     user.save().then(function() {
-        res.status(200).json({
+        res.statusCode = 200;
+        res.key = req.user.aes_public_key;
+        res.response = {
             status: 'succeeded',
             message: 'pattern deleted successfully'
-        });
+        };
+        next();
+        // res.status(200).json({
+        //     status: 'succeeded',
+        //     message: 'pattern deleted successfully'
+        // });
     });
 };
 
@@ -72,21 +79,21 @@ module.exports.update = function(req, res, next) {
     var j = 0;
     for (var i = 0; i < graph.length; i++) {
         if (graph[i].event.time == sequence[j].time && graph[i].event.device_id == sequence[j].device_id && graph[i].event.status == sequence[j].status) {
-            
+
             if (j == event_id) {
-               
+
                 graph[i].event.time = req.body.time;
                 break;
             }
-           
+
             j++;
             for (var k = 0; i < graph[i].edges.length; k++) {
                 var edge = graph[i].edges[k];
-                
+
                 if (edge.event.time == sequence[j].time && edge.event.device_id == sequence[j].device_id && edge.event.status == sequence[j].status){
                     i=0;
                     if (j == event_id) {
-                        
+
                         graph[i].edges[k].event.time = req.body.time;
                         break;
                     }
@@ -95,17 +102,24 @@ module.exports.update = function(req, res, next) {
         }
     }
     patterns[sequence_id][event_id].time = req.body.time;
-    
+
 
     user.patterns = patterns;
     user.graph = graph;
 
 
     user.save().then(function() {
-        res.status(200).json({
+        res.statusCode = 200;
+        res.key = req.user.aes_public_key;
+        res.response = {
             status: 'succeeded',
             message: 'pattern updated successfully'
-        });
+        };
+        next();
+        // res.status(200).json({
+        //     status: 'succeeded',
+        //     message: 'pattern updated successfully'
+        // });
     });
 };
 
@@ -121,10 +135,13 @@ module.exports.getPatterns = function(req, res, next) {
     patterns = [];
 
     if (graph === null) {
-        res.status(200).json({
+        res.statusCode = 200;
+        res.key = req.user.aes_public_key;
+        res.response = {
             status: 'succeeded',
             patterns: patterns
-        });
+        };
+        next();
         return;
     }
     var sequence = [];
@@ -140,10 +157,13 @@ module.exports.getPatterns = function(req, res, next) {
     user.patterns = patterns;
 
     user.save().then(function() {
-        res.status(200).json({
+        res.statusCode = 200;
+        res.key = req.user.aes_public_key;
+        res.response = {
             status: 'OK',
             patterns: patterns
-        });
+        };
+        next();
     });
 };
 

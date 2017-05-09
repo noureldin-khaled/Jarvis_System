@@ -42,10 +42,17 @@ module.exports.play = function(req, res, next) {
 
             client.on('close', function() {
                 console.log('Connection closed');
-                res.status(200).json({
+                res.statusCode = 200;
+                res.key = req.user.aes_public_key;
+                res.response = {
                     status: 'succeeded',
                     message: 'Connection closed'
-                });
+                };
+                next();
+                // res.status(200).json({
+                //     status: 'succeeded',
+                //     message: 'Connection closed'
+                // });
             });
     });
 

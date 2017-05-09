@@ -18,10 +18,14 @@ module.exports.index = function(req, res, next) {
             results.push(user);
         }
 
-        res.status(200).json({
+        res.statusCode = 200;
+        res.key = req.user.aes_public_key;
+        res.response = {
             status: 'succeeded',
             users: results
-        });
+        };
+
+        next();
     }).catch(function(err) {
         res.status(500).json({
             status:'failed',
@@ -58,7 +62,7 @@ module.exports.indexForDevice = function(req, res, next) {
             }
 
             if (found === false) {
-                if (currentUser == req.user.id) {
+                if (currentUser.id == req.user.id) {
                     res.status(403).json({
                         status: 'failed',
                         users: 'Authentication error, please log in again.'
@@ -75,10 +79,13 @@ module.exports.indexForDevice = function(req, res, next) {
             }
         }
 
-        res.status(200).json({
+        res.statusCode = 200;
+        res.key = req.user.aes_public_key;
+        res.response = {
             status: 'succeeded',
             users: results
-        });
+        };
+        next();
     }).catch(function(err) {
         res.status(500).json({
             status:'failed',
@@ -117,10 +124,13 @@ module.exports.update = function(req, res, next) {
 
     User.update(obj, { where : { id : req.user.id } }).then(function(affected) {
         if (affected[0] === 1) {
-            res.status(200).json({
+            res.statusCode = 200;
+            res.key = req.user.aes_public_key;
+            res.response = {
                 status: 'succeeded',
                 message: 'user successfully updated'
-            });
+            };
+            next();
         }
         else {
             res.status(404).json({
@@ -134,7 +144,6 @@ module.exports.update = function(req, res, next) {
             message: 'Internal server error'
         });
     });
-
 };
 
 module.exports.updateAuth = function(req, res, next) {
@@ -160,10 +169,13 @@ module.exports.updateAuth = function(req, res, next) {
 
     User.update(obj, { where : { id : req.params.id } }).then(function(affected) {
         if (affected[0] === 1) {
-            res.status(200).json({
+            res.statusCode = 200;
+            res.key = req.user.aes_public_key;
+            res.response = {
                 status: 'succeeded',
                 message: 'user successfully updated'
-            });
+            };
+            next();
         }
         else {
             res.status(404).json({
@@ -199,9 +211,12 @@ module.exports.privilege = function(req, res, next) {
             Device.findById(req.params.device_id).then(function(device) {
                 if (device) {
                     user.addDevice(device);
-                    res.status(200).json({
+                    res.statusCode = 200;
+                    res.key = req.user.aes_public_key;
+                    res.response = {
                         status: 'succeeded'
-                    });
+                    };
+                    next();
                 }
                 else {
                     res.status(404).json({

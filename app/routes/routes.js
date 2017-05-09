@@ -7,7 +7,6 @@ module.exports = function(app) {
    require('./CountryResource')(app);
    require('./MusicResource')(app);
 
-
    app.use(function(req, res, next) {
       res.status(404).json({
          status:'failed',
