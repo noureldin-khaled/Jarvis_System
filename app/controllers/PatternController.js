@@ -5,6 +5,13 @@ module.exports.put = function(req, res, next) {
     res.status(200).json({ message: "OK" });
 };
 
+
+module.exports.getGraph = function(req,res,next){
+    var user = req.user;
+    res.status(200).json({"graph": JSON.parse(user.graph)});
+};
+
+
 module.exports.delete = function(req, res, next) {
     var user = req.user;
     var patterns = user.patterns;
@@ -16,12 +23,16 @@ module.exports.delete = function(req, res, next) {
 
     var j = 0;
     for (var i = 0; i < graph.length; i++) {
-        if (j >= patterns[sequence_id].length - 1)
-        break;
+        if (j > patterns[sequence_id].length - 1 && j!==0)
+            break;
         if (graph[i].event.time == patterns[sequence_id][j].time && graph[i].event.device_id == patterns[sequence_id][j].device_id && graph[i].event.status == patterns[sequence_id][j].status) {
             j++;
             for (var k = 0; k < graph[i].edges.length; k++) {
-                if (graph[i].edges[k].event.time == patterns[sequenceid][j].time && graph[i].edges[k].event.device_id == patterns[sequence_id][j].device_id && graph[i].edges[k].event.status == patterns[sequence_id][j].status) {
+                if (graph[i].edges[k].event.time == patterns[sequence_id][j].time && graph[i].edges[k].event.device_id == patterns[sequence_id][j].device_id && graph[i].edges[k].event.status == patterns[sequence_id][j].status) {
+                    if(j==1){
+
+                        graph[i].count-= graph[i].edges[k].count;
+                    }
                     graph[i].edges.splice(k, 1);
                     break;
                 }
@@ -52,19 +63,30 @@ module.exports.update = function(req, res, next) {
     var sequence_id = req.params.sequenceid;
     var event_id = req.params.eventid;
 
-    var event = patterns[sequence_id][event_id];
     var sequence = patterns[sequence_id];
+
+    if(event_id == sequence.length -1){
+        res.status(500).json({"message":"Delete pattern instead xD"});
+        return;
+    }
     var j = 0;
     for (var i = 0; i < graph.length; i++) {
         if (graph[i].event.time == sequence[j].time && graph[i].event.device_id == sequence[j].device_id && graph[i].event.status == sequence[j].status) {
+            
             if (j == event_id) {
+               
                 graph[i].event.time = req.body.time;
                 break;
             }
+           
             j++;
-            for (var k = 0; i < graph[i].edges.length; i++) {
-                if (graph[i].edges[k].event.time == sequence[j].time && graph[i].edges[k].event.device_id == sequence[j].device_id && graph[i].edges[k].event.status == sequence[j].status) {
+            for (var k = 0; i < graph[i].edges.length; k++) {
+                var edge = graph[i].edges[k];
+                
+                if (edge.event.time == sequence[j].time && edge.event.device_id == sequence[j].device_id && edge.event.status == sequence[j].status){
+                    i=0;
                     if (j == event_id) {
+                        
                         graph[i].edges[k].event.time = req.body.time;
                         break;
                     }
@@ -73,6 +95,8 @@ module.exports.update = function(req, res, next) {
         }
     }
     patterns[sequence_id][event_id].time = req.body.time;
+    
+
     user.patterns = patterns;
     user.graph = graph;
 
@@ -114,6 +138,7 @@ module.exports.getPatterns = function(req, res, next) {
     }
 
     user.patterns = patterns;
+
     user.save().then(function() {
         res.status(200).json({
             status: 'OK',
@@ -128,7 +153,6 @@ var getSequence = function(graph, e, freq) {
 
     var i = 0;
     while (i < graph.length) {
-        console.log(i);
         if (graph[i].event.time == eventParent.time && graph[i].event.device_id == eventParent.device_id && graph[i].event.status == eventParent.status) {
 
             if (graph[i].edges.length === 0) {
@@ -239,9 +263,9 @@ function addToGraph(sequence, user) {
         if (!found) {
             var new_node = {
                 count: i === 0 ? 1 : 0,
+                event: event,
                 edges: [],
-                color: null,
-                event: event
+                color: null
             };
             graph.push(new_node);
             index = graph.length - 1;
