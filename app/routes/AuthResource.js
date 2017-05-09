@@ -8,7 +8,7 @@ module.exports = function(app) {
    var nonce = require('../middlewares/NonceMiddleware');
 
    app.post('/api/login', identity, aes_decrypt, nonce, AuthController.login, aes_encrypt);
-   app.post('/api/exchange', identity, nonce, AuthController.exchange);
+   app.post('/api/exchange', identity, rsa_decrypt, nonce, AuthController.exchange);
    app.post('/api/register', rsa_decrypt, AuthController.register);
    app.post('/api/salt/:username', identity, aes_decrypt, nonce, AuthController.salt, aes_encrypt);
    app.post('/api/logout', auth, aes_decrypt, nonce, AuthController.logout, aes_encrypt);
