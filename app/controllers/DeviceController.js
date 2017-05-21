@@ -239,7 +239,7 @@ module.exports.index = function(req, res, next) {
 
 module.exports.handle = function(req, res, next) {
     console.log('Made it!!'+ req.body.status +' and '+req.params.id);
-    
+
     req.checkParams('id', 'invalid').isInt();
     req.checkBody('status', 'required').notEmpty();
     req.checkBody('status', 'invalid').isBoolean();
@@ -375,8 +375,6 @@ module.exports.scan = function(req, res, next) {
                 });
             });
         }
-
-        return;
     });
 };
 
