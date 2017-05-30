@@ -1,5 +1,7 @@
 require('dotenv').load();
 
+var http = require('http');
+var fs = require('fs');
 var express = require('express');
 var expressValidator = require('express-validator');
 var app = express();
@@ -16,8 +18,8 @@ db.init(function(err) {
     else {
         console.log('Connected successfully to MySQL.');
 
-        app.use(bodyParser.json());
-        app.use(bodyParser.urlencoded({ extended: false }));
+        app.use(bodyParser.json({limit: '50mb'}));
+        app.use(bodyParser.urlencoded({ extended: false, limit: '50mb' }));
         app.use(expressValidator());
 
         app.use(methodOverride());
@@ -25,8 +27,8 @@ db.init(function(err) {
 
         var port = process.env.PORT || 80;
 
-        app.listen(port, function() {
-            console.log('Listening on port ' + port + '...');
+        http.createServer(app).listen(port, function() {
+            console.log('HTTP Listening on port ' + port + '...');
         });
 
         listenForBroadcast(port);
