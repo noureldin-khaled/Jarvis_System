@@ -3,6 +3,7 @@ module.exports = function(app) {
    require('./DeviceResource')(app);
    require('./RoomResource')(app);
    require('./UserResource')(app);
+   require('./FaceResource')(app);
    require('./PatternResource')(app);
    require('./CountryResource')(app);
    require('./MusicResource')(app);
