@@ -18,8 +18,8 @@ db.init(function(err) {
     else {
         console.log('Connected successfully to MySQL.');
 
-        app.use(bodyParser.json());
-        app.use(bodyParser.urlencoded({ extended: false }));
+        app.use(bodyParser.json({limit: '50mb'}));
+        app.use(bodyParser.urlencoded({ extended: false, limit: '50mb' }));
         app.use(expressValidator());
 
         app.use(methodOverride());
